@@ -92,8 +92,7 @@ npm run dev
 ```
 
 ### 4. Run the Platform
-Open your browser and navigate to:
-👉 **[http://localhost:5173](http://localhost:5173)**
+Open your browser and navigate to the local development URL provided by Vite (usually `http://localhost:5173`).
 
 Paste a Job Description, upload a few PDF resumes, and watch the AI committee go to work!
 
