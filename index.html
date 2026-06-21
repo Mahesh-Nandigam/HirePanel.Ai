@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HirePanel.ai - Autonomous AI Hiring Committee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --surface: rgba(24, 24, 27, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15), transparent 50%);
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle { color: var(--text-muted); font-size: 1.1rem; }
+
+        .upload-area {
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            background: var(--surface);
+            border: 2px dashed var(--primary);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .upload-btn:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .loading-text {
+            color: var(--primary);
+            font-weight: bold;
+            margin-top: 1rem;
+            display: none;
+            animation: pulse 1.5s infinite;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+        }
+
+        .name { font-size: 1.5rem; font-weight: 600; }
+        .role { color: var(--text-muted); font-size: 0.9rem; }
+
+        .status-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .status-HIRE { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .status-WAITLIST { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+        .status-REJECT { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0 auto 1.5rem;
+            background: rgba(0,0,0,0.3);
+            border: 4px solid var(--border);
+            position: relative;
+        }
+
+        .score-circle span { font-size: 0.9rem; position: absolute; bottom: -20px; color: var(--text-muted); }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric {
+            background: rgba(0,0,0,0.2);
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
+        .metric-value { font-size: 1.2rem; font-weight: 600; color: var(--primary); }
+
+        .agent-chat {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .chat-message {
+            margin-bottom: 0.8rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            padding-left: 10px;
+            border-left: 2px solid var(--primary);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .chat-agent { font-weight: 800; color: #a78bfa; margin-bottom: 0.2rem; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HirePanel.ai</h1>
+        <p class="subtitle">Autonomous AI Hiring Committee • Live Evaluation System</p>
+    </header>
+
+    <div class="upload-area">
+        <h2 style="margin-bottom: 1rem;">Upload Candidate Resumes</h2>
+        <p style="color: var(--text-muted);">Select PDF files to run them through the AI Hiring Panel</p>
+        <input type="file" id="file-input" multiple accept=".pdf">
+        <label for="file-input" class="upload-btn" style="display: inline-block;">Select PDFs</label>
+        <div id="loading" class="loading-text">Panel is evaluating candidate... Please wait (this takes ~15 seconds)</div>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <!-- Cards generated by JS -->
+    </div>
+
+    <script>
+        const dashboard = document.getElementById('dashboard');
+        const fileInput = document.getElementById('file-input');
+        const loading = document.getElementById('loading');
+
+        fileInput.addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if (files.length === 0) return;
+
+            for(let i=0; i<files.length; i++) {
+                const file = files[i];
+                loading.style.display = 'block';
+                loading.innerText = `Panel is evaluating ${file.name}... Please wait`;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch('http://localhost:8000/api/evaluate', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if(response.ok) {
+                        const candidate = await response.json();
+                        renderCard(candidate);
+                    } else {
+                        alert(`Error processing ${file.name}. (Did you hit API limits?)`);
+                    }
+                } catch(err) {
+                    alert('Error connecting to backend server. Is it running?');
+                }
+            }
+            loading.style.display = 'none';
+        });
+
+        function renderCard(c) {
+            let color = c.status === 'HIRE' ? 'var(--success)' : c.status === 'WAITLIST' ? 'var(--warning)' : 'var(--danger)';
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            let messagesHTML = c.messages.map(m => `
+                <div class="chat-message">
+                    <div class="chat-agent">[${m.agent} Agent]</div>
+                    ${m.text}
+                </div>
+            `).join('');
+
+            card.innerHTML = `
+                <div class="status-badge status-${c.status}">${c.status}</div>
+                
+                <div class="card-header">
+                    <img src="${c.avatar}" alt="Avatar" class="avatar">
+                    <div>
+                        <div class="name">${c.name}</div>
+                        <div class="role">${c.role}</div>
+                    </div>
+                </div>
+
+                <div class="score-circle" style="border-color: ${color}">
+                    ${c.finalScore}
+                    <span>Alignment</span>
+                </div>
+
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-label">Resume</div>
+                        <div class="metric-value">${c.resume}/10</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">GitHub</div>
+                        <div class="metric-value">${c.github}/10</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">LinkedIn</div>
+                        <div class="metric-value">${c.linkedin}/10</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">JD Match</div>
+                        <div class="metric-value">${c.jdMatch}/10</div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">Agent Committee Chat</h3>
+                <div class="agent-chat">
+                    ${messagesHTML}
+                </div>
+            `;
+            
+            dashboard.prepend(card);
+        }
+    </script>
+</body>
+</html>
