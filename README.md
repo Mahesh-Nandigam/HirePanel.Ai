@@ -6,6 +6,8 @@
     Manual recruiting is cooked. 💀 <i>HirePanel.ai</i> is an elite multi-agent LLM squad that reads resumes, extracts evidence, catches red flags, debates the fit, and drops an executive summary—all before you finish your coffee.
   </p>
 
+  <h3>📺 <a href="https://www.linkedin.com/posts/mahesh-nandigam_ai-agenticai-techcommunity-ugcPost-7474855620551241728-O5H9/?utm_source=share&utm_medium=member_desktop&rcm=ACoAADW99hsBJVeFIsEk7TLOg9YovphT7Sd-cWg">Watch the Live Video Demo</a></h3>
+
   [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)]()
   [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)]()
   [![Groq](https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logo=groq&logoColor=white)]()
