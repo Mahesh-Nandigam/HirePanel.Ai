@@ -143,8 +143,9 @@ class GroqKeyRotator:
                 print(f"Ollama inference error: {e}")
                 print("Falling back to Groq...")
 
-        # 2. NVIDIA API Override (Bypassing Groq entirely for extreme speed)
-        nvidia_api_key = os.environ.get("NVIDIA_API_KEY", "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") 
+        nvidia_api_key = os.environ.get("NVIDIA_API_KEY") 
+        if not nvidia_api_key:
+            raise Exception("NVIDIA_API_KEY environment variable is not set!")
         # Using a fallback key if not present in env, though we can also just use the one we know works.
         # Actually, let's just use the direct request to NVIDIA
         
