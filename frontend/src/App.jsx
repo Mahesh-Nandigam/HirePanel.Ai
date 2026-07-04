@@ -61,7 +61,7 @@ function App() {
       formData.append('file', file);
       
       try {
-        const response = await fetch('http://localhost:8001/api/intake', {
+        const response = await fetch('http://localhost:8000/api/intake', {
           method: 'POST',
           body: formData
         });
@@ -119,7 +119,7 @@ function App() {
       const t5 = setTimeout(() => updateProgress(95, 'Decider', 'Decider Agent: Synthesizing score weights and establishing final fit...'), 11000);
 
       try {
-        const response = await fetch('http://localhost:8001/api/evaluate', {
+        const response = await fetch('http://localhost:8000/api/evaluate', {
           method: 'POST',
           body: formData
         });
@@ -634,7 +634,8 @@ function App() {
                 </table>
               </div>
 
-              <div className="flex justify-end gap-4 mt-8">
+              {vettingResults.length > 0 && vettingResults.every(c => c.completed) && (
+                <div className="flex justify-end gap-4 mt-8">
                 <button 
                   onClick={handleExportCSV}
                   className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl transition-transform hover:scale-105 active:scale-95 text-sm flex items-center gap-2 shadow-lg"
@@ -647,7 +648,8 @@ function App() {
                 >
                   Start New Job Evaluation
                 </button>
-              </div>
+                </div>
+              )}
             </div>
           )}
 

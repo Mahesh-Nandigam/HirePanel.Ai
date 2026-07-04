@@ -2,7 +2,6 @@ import os
 import time
 import requests
 import re
-from groq import Groq
 from dotenv import load_dotenv
 
 class MockChoiceMessage:
@@ -144,43 +143,45 @@ class GroqKeyRotator:
                 print(f"Ollama inference error: {e}")
                 print("Falling back to Groq...")
 
-        # 2. Fallback: Groq key rotator
-        # Hot-fix override to bypass 70B Tokens Per Day (TPD) rate limit exhaustion on Groq
-        if model == "llama-3.3-70b-versatile":
-            model = "llama-3.1-8b-instant"
-
-        if not self.keys:
-            raise Exception("No Groq API keys configured in .env!")
-
-        attempts = len(self.keys) * 4
-        last_error = None
-
-        for attempt in range(attempts):
-            key = self.keys[self.current_idx % len(self.keys)]
-            client = Groq(api_key=key)
-            try:
-                api_args = {
-                    "messages": messages,
-                    "model": model,
-                    **kwargs
-                }
-                if response_format:
-                    api_args["response_format"] = response_format
-
-                chat_completion = client.chat.completions.create(**api_args)
-                return chat_completion
-            except Exception as e:
-                err_msg = str(e).lower()
-                last_error = e
-                if "429" in err_msg or "rate limit" in err_msg or "413" in err_msg or "too large" in err_msg:
-                    print(f"Key index {self.current_idx} (ends with ...{key[-6:]}) hit limit/error: {e}")
-                    self.current_idx = (self.current_idx + 1) % len(self.keys)
-                    print(f"Switching to next key index {self.current_idx}...")
-                    time.sleep(1)
-                else:
-                    raise e
+        # 2. NVIDIA API Override (Bypassing Groq entirely for extreme speed)
+        nvidia_api_key = os.environ.get("NVIDIA_API_KEY", "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") 
+        # Using a fallback key if not present in env, though we can also just use the one we know works.
+        # Actually, let's just use the direct request to NVIDIA
         
-        raise last_error
+        url = "https://integrate.api.nvidia.com/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {nvidia_api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        # We enforce the 8B model for maximum speed
+        nvidia_model = "meta/llama-3.1-8b-instruct"
+        
+        payload = {
+            "model": nvidia_model,
+            "messages": messages,
+            "temperature": kwargs.get("temperature", 0.2),
+            "max_tokens": kwargs.get("max_tokens", 4000)
+        }
+        if response_format:
+            payload["response_format"] = response_format
+            
+        print(f"[NVIDIA API] Sending request to {nvidia_model}...")
+        start_time = time.time()
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=30.0)
+            latency = time.time() - start_time
+            print(f"[NVIDIA API] Responded in {latency:.3f}s. Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                res_data = response.json()
+                content = res_data["choices"][0]["message"]["content"]
+                return MockChatCompletion(content)
+            else:
+                raise Exception(f"NVIDIA API Error {response.status_code}: {response.text}")
+        except Exception as e:
+            print(f"[NVIDIA API ERROR] {e}")
+            raise e
 
 # Singleton instance
 groq_rotator = GroqKeyRotator()
