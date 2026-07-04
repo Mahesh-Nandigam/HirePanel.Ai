@@ -61,7 +61,7 @@ function App() {
       formData.append('file', file);
       
       try {
-        const response = await fetch('http://localhost:8000/api/intake', {
+        const response = await fetch('https://hirepanel-backend-111822887564.us-central1.run.app/api/intake', {
           method: 'POST',
           body: formData
         });
@@ -119,7 +119,7 @@ function App() {
       const t5 = setTimeout(() => updateProgress(95, 'Decider', 'Decider Agent: Synthesizing score weights and establishing final fit...'), 11000);
 
       try {
-        const response = await fetch('http://localhost:8000/api/evaluate', {
+        const response = await fetch('https://hirepanel-backend-111822887564.us-central1.run.app/api/evaluate', {
           method: 'POST',
           body: formData
         });
