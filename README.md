@@ -27,14 +27,14 @@ HirePanel.ai structures candidate screening as a pipeline of cooperative, specia
 ```mermaid
 flowchart TD
     %% Define styles for clean appearance, larger font and high contrast text
-    classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#000,font-size:16px,font-weight:bold;
-    classDef agent fill:#f3e5f5,stroke:#6a1b9a,stroke-width:3px,color:#000,font-size:16px,font-weight:bold;
-    classDef step fill:#efebe9,stroke:#4e342e,stroke-width:3px,color:#000,font-size:16px,font-weight:bold;
-    classDef output fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#000,font-size:16px,font-weight:bold;
+    classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:4px,color:#000,font-size:18px,font-weight:bold;
+    classDef agent fill:#f3e5f5,stroke:#6a1b9a,stroke-width:4px,color:#000,font-size:18px,font-weight:bold;
+    classDef step fill:#efebe9,stroke:#4e342e,stroke-width:4px,color:#000,font-size:18px,font-weight:bold;
+    classDef output fill:#e8f5e9,stroke:#2e7d32,stroke-width:4px,color:#000,font-size:18px,font-weight:bold;
 
     %% 1. Inputs & Initial Parsing
-    RecruiterJD([&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Recruiter inputs Job Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;])
-    JDAgentInput([&nbsp;&nbsp;&nbsp;&nbsp;Job Description Agent parses role details, expectations & required skills&nbsp;&nbsp;&nbsp;&nbsp;])
+    RecruiterJD(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Recruiter inputs Job Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    JDAgentInput(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Job Description Agent parses role details,<br/>expectations & required skills&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     RecruiterPDF(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Recruiter uploads PDF Resumes&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;Supports 1 to 10,000 resumes in bulk&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     
     RecruiterJD -----> JDAgentInput
@@ -87,7 +87,7 @@ flowchart TD
         HRPartner <-->|Debates culture, longevity vs technical depth| TechLead
     end
     %% style DebatePanel background transparent so background lines are visible
-    style DebatePanel fill:none,stroke:#fb8c00,stroke-width:3.5px;
+    style DebatePanel fill:none,stroke:#fb8c00,stroke-width:4px;
 
     %% 7. Verdict
     Decider(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Decider Agent weighs score weights&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;and debate outcomes for consensus&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
