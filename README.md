@@ -26,11 +26,11 @@ HirePanel.ai structures candidate screening as a pipeline of cooperative, specia
 
 ```mermaid
 flowchart TD
-    %% Define styles for clean appearance
-    classDef input fill:#e1f5fe,stroke:#01579b,stroke-width:1px;
-    classDef agent fill:#f3e5f5,stroke:#4a148c,stroke-width:1px;
-    classDef step fill:#efebe9,stroke:#3e2723,stroke-width:1px;
-    classDef output fill:#e8f5e9,stroke:#1b5e20,stroke-width:1px;
+    %% Define styles for clean appearance and high contrast text
+    classDef input fill:#e1f5fe,stroke:#01579b,stroke-width:1px,color:#000;
+    classDef agent fill:#f3e5f5,stroke:#4a148c,stroke-width:1px,color:#000;
+    classDef step fill:#efebe9,stroke:#3e2723,stroke-width:1px,color:#000;
+    classDef output fill:#e8f5e9,stroke:#1b5e20,stroke-width:1px,color:#000;
 
     %% 1. Inputs
     RecruiterJD([Recruiter inputs Job Description])
