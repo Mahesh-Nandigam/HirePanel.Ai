@@ -207,22 +207,21 @@ class GroqKeyRotator:
     def execute_completion(self, messages, model="llama-3.3-70b-versatile", response_format=None, **kwargs):
         is_groq_disabled = os.environ.get("DISABLE_GROQ_FALLBACK", "").lower() == "true"
         
-        # 1. Attempt Cloud API first (Groq with rotation, then NVIDIA)
+        # 1. Attempt NVIDIA API FIRST
+        nvidia_api_key = os.environ.get("NVIDIA_API_KEY", "")
+        if nvidia_api_key.strip():
+            try:
+                return self._call_nvidia(messages, response_format, **kwargs)
+            except Exception as e:
+                print(f"NVIDIA Cloud API failed: {e}. Trying fallback...")
+
+        # 2. Attempt Groq Cloud (only if not disabled)
         if not is_groq_disabled:
-            # A. Attempt Groq Cloud
             if self.keys:
                 try:
                     return self._call_groq_with_rotation(messages, response_format, model=model, **kwargs)
                 except Exception as e:
-                    print(f"All Groq Cloud keys failed: {e}. Trying secondary cloud options...")
-            
-            # B. Attempt NVIDIA API
-            nvidia_api_key = os.environ.get("NVIDIA_API_KEY", "")
-            if nvidia_api_key.strip():
-                try:
-                    return self._call_nvidia(messages, response_format, **kwargs)
-                except Exception as e:
-                    print(f"NVIDIA Cloud API failed: {e}. Trying local fallback...")
+                    print(f"All Groq Cloud keys failed: {e}. Trying local fallback...")
 
         # 2. Attempt Local Ollama Fallback (if cloud failed, or if cloud is disabled)
         try:
