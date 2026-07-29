@@ -119,25 +119,31 @@ async def evaluate_candidate(file: UploadFile = File(...), job_description: str 
         linkedin_score = safe_float(linkedin_result.get("linkedin_score", 0.0))
         jd_score = safe_float(jd_result.get("jd_fit_score", 0.0))
 
-        # 4. Run Tech Lead and HR debate agents in parallel
+        # 4. Run Tech Lead and HR debate agents in a sequential debate loop
         start_debate = time.time()
-        # Build concise resume context for debate agents (first 200 words)
-        resume_context = " ".join(text.split()[:200])
+        # Build richer resume context for debate agents (up to 1500 words)
+        resume_context = " ".join(text.split()[:1500])
 
-        def run_tech_lead():
-            return TechLeadAgent().evaluate(resume_score, github_score, jd_score, name, resume_context)
-
-        def run_hr():
-            return HRAgent().evaluate(linkedin_score, jd_score, name, resume_context)
-
-        tl_result, hr_result = await asyncio.gather(
-            asyncio.to_thread(run_tech_lead),
-            asyncio.to_thread(run_hr)
+        # Step A: Get initial Technical evaluation from the Tech Lead
+        tl_initial = await asyncio.to_thread(
+            TechLeadAgent().evaluate, resume_score, github_score, jd_score, name, resume_context
         )
-        debate_time = time.time() - start_debate
-        
-        tl_arg = tl_result.get("argument", "No strong technical opinion.")
+        tl_init_arg = tl_initial.get("argument", "No strong technical opinion.")
+        tl_init_stance = tl_initial.get("stance", "PASS")
+
+        # Step B: Pass Tech Lead's argument to the HR Partner for their counter-evaluation
+        hr_result = await asyncio.to_thread(
+            HRAgent().evaluate, linkedin_score, jd_score, name, resume_context, peer_argument=tl_init_arg, peer_stance=tl_init_stance
+        )
         hr_arg = hr_result.get("argument", "No strong HR opinion.")
+        hr_stance = hr_result.get("stance", "PASS")
+
+        # Step C: Pass HR Partner's counter-argument back to the Tech Lead for a final response/rebuttal
+        tl_result = await asyncio.to_thread(
+            TechLeadAgent().evaluate, resume_score, github_score, jd_score, name, resume_context, peer_argument=hr_arg, peer_stance=hr_stance
+        )
+        tl_arg = tl_result.get("argument", "No strong technical opinion.")
+        debate_time = time.time() - start_debate
 
         # 5. Decider Agent
         start_decider = time.time()

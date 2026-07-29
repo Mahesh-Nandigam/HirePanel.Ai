@@ -39,7 +39,7 @@ class GitHubAgent:
         return match.group(1) if match else ""
 
     def fetch_github_data(self, username: str) -> dict:
-        if not username or self.demo_mode: return {}
+        if not username: return {}
         base_url = f"https://api.github.com/users/{username}"
         data = {}
         try:

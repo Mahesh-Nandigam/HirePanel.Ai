@@ -72,7 +72,7 @@ class IntakeAgent:
             print(f"Error reading PDF {pdf_path}: {e}")
             return ""
 
-    def _extract_data_via_llm(self, text: str) -> dict:
+    def _extract_resume_metadata(self, text: str) -> dict:
         if not text.strip(): return {"candidate_name": "Unknown", "github_url": "No", "linkedin_url": "No", "resume_summary": ""}
         
         # 1. Regex for URLs (extremely fast and 100% accurate)
@@ -147,9 +147,9 @@ class IntakeAgent:
         if candidate_name == "Unknown" and lines:
             candidate_name = lines[0]
 
-        # Truncate text to 600 words to make it extremely token-efficient for downstream agents
+        # Keep up to 3000 words to support comprehensive multi-page resumes fully
         words = text.split()
-        resume_summary = " ".join(words[:600])
+        resume_summary = " ".join(words[:3000])
 
         return {
             "candidate_name": candidate_name,
@@ -163,6 +163,6 @@ class IntakeAgent:
         resume_text = self.extract_text_from_pdf(pdf_path)
         if not resume_text.strip(): return {"candidate_name": "Unknown", "github_url": "No", "linkedin_url": "No", "resume_summary": "", "resume_filename": resume_filename}
         
-        extracted = self._extract_data_via_llm(resume_text)
+        extracted = self._extract_resume_metadata(resume_text)
         extracted["resume_filename"] = resume_filename
         return extracted

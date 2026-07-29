@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import IsoLevelWarp from '@/components/ui/isometric-wave-grid-background'
+import CandidateDrawer from '@/components/CandidateDrawer'
+import Leaderboard from '@/components/Leaderboard'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://hirepanel-backend-111822887564.us-central1.run.app';
 
 function App() {
   const [step, setStep] = useState(0);
@@ -61,7 +65,7 @@ function App() {
       formData.append('file', file);
       
       try {
-        const response = await fetch('https://hirepanel-backend-111822887564.us-central1.run.app/api/intake', {
+        const response = await fetch(`${API_BASE_URL}/api/intake`, {
           method: 'POST',
           body: formData
         });
@@ -119,7 +123,7 @@ function App() {
       const t5 = setTimeout(() => updateProgress(95, 'Decider', 'Decider Agent: Synthesizing score weights and establishing final fit...'), 11000);
 
       try {
-        const response = await fetch('https://hirepanel-backend-111822887564.us-central1.run.app/api/evaluate', {
+        const response = await fetch(`${API_BASE_URL}/api/evaluate`, {
           method: 'POST',
           body: formData
         });
@@ -161,9 +165,10 @@ function App() {
       }
     };
 
-    // Process all candidates in parallel concurrently
-    const promises = intakeData.map((candidate, idx) => evaluateCandidate(candidate, idx));
-    await Promise.all(promises);
+    // Process all candidates sequentially to prevent API rate-limiting blocks and network bottlenecks
+    for (let idx = 0; idx < intakeData.length; idx++) {
+      await evaluateCandidate(intakeData[idx], idx);
+    }
     setIsVetting(false);
   };
 
@@ -582,125 +587,25 @@ function App() {
           </div>
 
           {/* LEADERBOARD SECTION */}
-          {sortedCandidates.length > 0 && (
-            <div ref={leaderboardRef} className="glass-panel p-8 animate-slide-up border-white/10 mt-6 scroll-mt-6">
-              <h2 className="text-3xl font-extrabold mb-2 text-slate-100 flex items-center gap-3">
-                🏆 Candidate Alignment Leaderboard
-              </h2>
-              <p className="text-slate-400 mb-8">Candidates ranked based on overall fit matrix, technical depth, and JD alignment.</p>
-
-              <div className="overflow-x-auto rounded-xl border border-white/10 bg-black/40">
-                <table className="w-full text-left text-sm text-slate-300">
-                  <thead className="bg-white/5 text-slate-400 uppercase font-semibold">
-                    <tr>
-                      <th className="px-6 py-4 text-center w-20">Rank</th>
-                      <th className="px-6 py-4">Candidate Name</th>
-                      <th className="px-6 py-4 text-center">Fit Score</th>
-                      <th className="px-6 py-4 text-center">JD Match</th>
-                      <th className="px-6 py-4">Manager Justification</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedCandidates.map((c, index) => {
-                      const payload = c.payload;
-                      const isTop = index === 0;
-                      return (
-                        <tr key={index} className={`border-t border-white/5 hover:bg-white/5 transition-colors ${isTop ? 'bg-amber-500/5' : ''}`}>
-                          <td className="px-6 py-4 text-center">
-                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
-                              index === 0 ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/25' :
-                              index === 1 ? 'bg-slate-300 text-black' :
-                              index === 2 ? 'bg-amber-700 text-white' : 'bg-slate-800 text-slate-400'
-                            }`}>
-                              {index + 1}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 font-bold text-slate-200">
-                            {c.name} {index === 0 && '👑'}
-                          </td>
-                          <td className="px-6 py-4 text-center font-extrabold text-primary text-base">
-                            {Math.round(payload.finalScore)}
-                          </td>
-                          <td className="px-6 py-4 text-center font-semibold">
-                            {payload.jdMatch}/10
-                          </td>
-                          <td className="px-6 py-4 text-slate-400 text-xs max-w-md leading-relaxed">
-                            {payload.messages?.find(m => m.agent === 'Decider')?.text || "Fit determined by consensus."}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {vettingResults.length > 0 && vettingResults.every(c => c.completed) && (
-                <div className="flex justify-end gap-4 mt-8">
-                <button 
-                  onClick={handleExportCSV}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 px-6 rounded-xl transition-transform hover:scale-105 active:scale-95 text-sm flex items-center gap-2 shadow-lg"
-                >
-                  <span>📊</span> Export to CSV
-                </button>
-                <button 
-                  onClick={() => { changeStep(1); setIntakeData([]); setVettingResults([]); }}
-                  className="text-slate-400 hover:text-white underline transition-colors text-sm py-2 px-4"
-                >
-                  Start New Job Evaluation
-                </button>
-                </div>
-              )}
-            </div>
-          )}
+          <Leaderboard 
+            sortedCandidates={sortedCandidates}
+            leaderboardRef={leaderboardRef}
+            handleExportCSV={handleExportCSV}
+            changeStep={changeStep}
+            setIntakeData={setIntakeData}
+            setVettingResults={setVettingResults}
+            vettingResults={vettingResults}
+          />
 
         </div>
       )}
 
       {/* SLIDING CHAT DRAWER */}
-      {activeDrawerCandidate && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end animate-fade-in">
-          {/* Backdrop Click */}
-          <div className="flex-grow" onClick={() => setActiveDrawerCandidate(null)}></div>
-          
-          {/* Drawer content */}
-          <div className="w-full max-w-xl h-full bg-slate-900 border-l border-white/10 flex flex-col shadow-2xl relative animate-slide-left">
-            {/* Header */}
-            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-slate-955">
-              <div>
-                <h3 className="text-xl font-bold text-slate-200">Agent Vetting Transcript</h3>
-                <p className="text-xs text-slate-400">Candidate: {activeDrawerCandidate.name}</p>
-              </div>
-              <button 
-                onClick={() => setActiveDrawerCandidate(null)}
-                className="text-slate-400 hover:text-white text-xl p-2 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Chat Messages Log */}
-            <div className="flex-grow overflow-y-auto p-6 flex flex-col gap-4 bg-slate-900/30">
-              {activeDrawerCandidate.payload?.messages?.map((msg, idx) => (
-                <div key={idx} className="bg-slate-955/40 border border-white/5 rounded-xl p-4 flex flex-col gap-1.5 shadow-sm">
-                  <div className="flex justify-between items-center">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-lg border ${getAgentColorClass(msg.agent)}`}>
-                      [{msg.agent} Agent]
-                    </span>
-                  </div>
-                  <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">
-                    {msg.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-            
-            {/* Footer */}
-            <div className="p-4 border-t border-white/10 text-center bg-slate-950 text-xs text-slate-500">
-              HirePanel.ai Committee transcripts are mathematically consistent with Groq consensus evaluations.
-            </div>
-          </div>
-        </div>
-      )}
+      <CandidateDrawer 
+        candidate={activeDrawerCandidate}
+        onClose={() => setActiveDrawerCandidate(null)}
+        getAgentColorClass={getAgentColorClass}
+      />
     </div>
   );
 }

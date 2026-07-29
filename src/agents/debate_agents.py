@@ -26,7 +26,7 @@ class TechLeadAgent:
     def __init__(self):
         self.model = "llama-3.3-70b-versatile"
 
-    def evaluate(self, resume_score: float, github_score: float, jd_fit_score: float, candidate_name: str = "The candidate", resume_context: str = "") -> dict:
+    def evaluate(self, resume_score: float, github_score: float, jd_fit_score: float, candidate_name: str = "The candidate", resume_context: str = "", peer_argument: str = "", peer_stance: str = "") -> dict:
         prompt = (
             f"You are the SENIOR TECH LEAD on a hiring committee. Give a candid, evidence-based 2-3 sentence technical evaluation of {candidate_name}.\n\n"
             f"Assessment Scores:\n"
@@ -36,6 +36,14 @@ class TechLeadAgent:
         )
         if resume_context:
             prompt += f"Key Resume Evidence:\n{resume_context}\n\n"
+            
+        if peer_argument:
+            prompt += (
+                f"HR Partner Counter-Argument: \"{peer_argument}\"\n"
+                f"HR Partner Stance: {peer_stance}\n\n"
+                f"Instruction: Address or respond to the HR Partner's organizational/stability concerns in your technical defense/assessment.\n\n"
+            )
+            
         prompt += (
             f"RULES:\n"
             f"1. Reference SPECIFIC technologies, projects, or skills from the resume evidence\n"
@@ -64,7 +72,7 @@ class HRAgent:
     def __init__(self):
         self.model = "llama-3.3-70b-versatile"
 
-    def evaluate(self, linkedin_score: float, jd_fit_score: float, candidate_name: str = "The candidate", resume_context: str = "") -> dict:
+    def evaluate(self, linkedin_score: float, jd_fit_score: float, candidate_name: str = "The candidate", resume_context: str = "", peer_argument: str = "", peer_stance: str = "") -> dict:
         prompt = (
             f"You are the HR BUSINESS PARTNER on a hiring committee. Give a candid, evidence-based 2-3 sentence evaluation of {candidate_name} focusing on ORGANIZATIONAL FIT, not technical skills.\n\n"
             f"Assessment Scores:\n"
@@ -73,6 +81,14 @@ class HRAgent:
         )
         if resume_context:
             prompt += f"Key Resume Evidence:\n{resume_context}\n\n"
+            
+        if peer_argument:
+            prompt += (
+                f"Tech Lead Argument: \"{peer_argument}\"\n"
+                f"Tech Lead Stance: {peer_stance}\n\n"
+                f"Instruction: Address or respond to the Tech Lead's technical stance from an organizational fit perspective.\n\n"
+            )
+            
         prompt += (
             f"RULES:\n"
             f"1. Reference SPECIFIC career patterns — job tenures, companies, progression, or gaps from the resume\n"

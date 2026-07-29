@@ -101,63 +101,69 @@ class GroqKeyRotator:
         else:
             raise Exception(f"Ollama returned status code {response.status_code}")
 
-    def execute_completion(self, messages, model="llama-3.3-70b-versatile", response_format=None, **kwargs):
-        is_groq_disabled = os.environ.get("DISABLE_GROQ_FALLBACK", "").lower() == "true"
-
-        if is_groq_disabled:
-            # Strict local Ollama-only path (no fallback to Groq)
-            try:
-                # Fast ping check to verify Ollama is active (timeout 1.0s)
-                ping_resp = requests.get("http://127.0.0.1:11434/", timeout=1.0)
-                if ping_resp.status_code != 200 or "ollama is running" not in ping_resp.text.lower():
-                    raise Exception("Ollama signature not found in response text")
-            except Exception as e:
-                raise Exception(f"Ollama is offline/unreachable and Groq fallback is disabled: {e}")
-
-            try:
-                return self._call_ollama(messages, response_format)
-            except Exception as e:
-                raise Exception(f"Ollama inference failed: {e}")
-
-        # Re-enable Ollama check if 60 seconds have passed since last failure
-        if not self.demo_mode and not self.ollama_active:
-            if time.time() - self.last_ollama_fail > 60:
-                self.ollama_active = True
-
-        # Fast ping check to verify Ollama is active and responding (timeout 1.0s)
-        if self.ollama_active:
-            try:
-                ping_resp = requests.get("http://127.0.0.1:11434/", timeout=1.0)
-                if ping_resp.status_code != 200 or "ollama is running" not in ping_resp.text.lower():
-                    raise Exception("Ollama signature not found in response text")
-            except Exception as e:
-                print(f"Ollama local ping failed: {e}. Disabling local inference for 60 seconds.")
-                self.ollama_active = False
-                self.last_ollama_fail = time.time()
-
-        # 1. Attempt local Ollama inference first (if online)
-        if self.ollama_active:
-            try:
-                return self._call_ollama(messages, response_format)
-            except Exception as e:
-                print(f"Ollama inference error: {e}")
-                print("Falling back to Groq...")
-
-        nvidia_api_key = os.environ.get("NVIDIA_API_KEY") 
-        if not nvidia_api_key:
-            raise Exception("NVIDIA_API_KEY environment variable is not set!")
-        # Using a fallback key if not present in env, though we can also just use the one we know works.
-        # Actually, let's just use the direct request to NVIDIA
+    def _call_groq_with_rotation(self, messages, response_format=None, **kwargs):
+        if not self.keys:
+            raise Exception("No Groq API keys available.")
+            
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        attempts = len(self.keys)
         
+        for _ in range(attempts):
+            api_key = self.keys[self.current_idx]
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+            # Groq model
+            model = kwargs.get("model", "llama-3.3-70b-versatile")
+            payload = {
+                "model": model,
+                "messages": messages,
+                "temperature": kwargs.get("temperature", 0.2),
+                "max_tokens": kwargs.get("max_tokens", 4000)
+            }
+            if response_format:
+                payload["response_format"] = response_format
+                
+            print(f"[Groq API] Sending request to {model} using key index {self.current_idx}...")
+            start_time = time.time()
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=30.0)
+                latency = time.time() - start_time
+                print(f"[Groq API] Responded in {latency:.3f}s. Status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    content = res_data["choices"][0]["message"]["content"]
+                    return MockChatCompletion(content)
+                elif response.status_code == 429:
+                    print(f"[Groq API Rate Limit] Key index {self.current_idx} rate limited. Rotating key...")
+                    self.current_idx = (self.current_idx + 1) % len(self.keys)
+                    continue
+                else:
+                    print(f"[Groq API Error {response.status_code}] {response.text}. Rotating key...")
+                    self.current_idx = (self.current_idx + 1) % len(self.keys)
+                    continue
+            except Exception as e:
+                print(f"[Groq API Connection Error] {e}. Rotating key...")
+                self.current_idx = (self.current_idx + 1) % len(self.keys)
+                continue
+                
+        raise Exception("All Groq API keys failed or were rate limited.")
+
+    def _call_nvidia(self, messages, response_format=None, **kwargs):
+        nvidia_api_key = os.environ.get("NVIDIA_API_KEY", "")
+        if not nvidia_api_key.strip():
+            raise Exception("NVIDIA_API_KEY is not set.")
+            
         url = "https://integrate.api.nvidia.com/v1/chat/completions"
         headers = {
             "Authorization": f"Bearer {nvidia_api_key}",
             "Content-Type": "application/json"
         }
         
-        # We enforce the 8B model for maximum speed
+        # Meta Llama Model on NVIDIA NIM
         nvidia_model = "meta/llama-3.1-8b-instruct"
-        
         payload = {
             "model": nvidia_model,
             "messages": messages,
@@ -169,20 +175,47 @@ class GroqKeyRotator:
             
         print(f"[NVIDIA API] Sending request to {nvidia_model}...")
         start_time = time.time()
-        try:
-            response = requests.post(url, headers=headers, json=payload, timeout=30.0)
-            latency = time.time() - start_time
-            print(f"[NVIDIA API] Responded in {latency:.3f}s. Status: {response.status_code}")
+        response = requests.post(url, headers=headers, json=payload, timeout=30.0)
+        latency = time.time() - start_time
+        print(f"[NVIDIA API] Responded in {latency:.3f}s. Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            res_data = response.json()
+            content = res_data["choices"][0]["message"]["content"]
+            return MockChatCompletion(content)
+        else:
+            raise Exception(f"NVIDIA API Error {response.status_code}: {response.text}")
+
+    def execute_completion(self, messages, model="llama-3.3-70b-versatile", response_format=None, **kwargs):
+        is_groq_disabled = os.environ.get("DISABLE_GROQ_FALLBACK", "").lower() == "true"
+        
+        # 1. Attempt Cloud API first (Groq with rotation, then NVIDIA)
+        if not is_groq_disabled:
+            # A. Attempt Groq Cloud
+            if self.keys:
+                try:
+                    return self._call_groq_with_rotation(messages, response_format, model=model, **kwargs)
+                except Exception as e:
+                    print(f"All Groq Cloud keys failed: {e}. Trying secondary cloud options...")
             
-            if response.status_code == 200:
-                res_data = response.json()
-                content = res_data["choices"][0]["message"]["content"]
-                return MockChatCompletion(content)
-            else:
-                raise Exception(f"NVIDIA API Error {response.status_code}: {response.text}")
+            # B. Attempt NVIDIA API
+            nvidia_api_key = os.environ.get("NVIDIA_API_KEY", "")
+            if nvidia_api_key.strip():
+                try:
+                    return self._call_nvidia(messages, response_format, **kwargs)
+                except Exception as e:
+                    print(f"NVIDIA Cloud API failed: {e}. Trying local fallback...")
+
+        # 2. Attempt Local Ollama Fallback (if cloud failed, or if cloud is disabled)
+        try:
+            # Check if Ollama is running (timeout 1.0s)
+            ping_resp = requests.get("http://127.0.0.1:11434/", timeout=1.0)
+            if ping_resp.status_code == 200 and "ollama is running" in ping_resp.text.lower():
+                return self._call_ollama(messages, response_format)
         except Exception as e:
-            print(f"[NVIDIA API ERROR] {e}")
-            raise e
+            print(f"Local Ollama is offline or failed: {e}")
+
+        raise Exception("All inference engines (Groq Cloud, NVIDIA Cloud, and Local Ollama) failed or are not configured.")
 
 # Singleton instance
 groq_rotator = GroqKeyRotator()

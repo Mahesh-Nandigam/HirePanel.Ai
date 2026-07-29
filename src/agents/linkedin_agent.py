@@ -36,8 +36,6 @@ class LinkedInAgent:
         return match.group(1) if match else ""
 
     def fetch_linkedin_via_scrapingdog(self, linkedin_url: str) -> dict:
-        if self.demo_mode:
-            return {}
         api_key = os.environ.get("SCRAPINGDOG_API_KEY")
         if not api_key or not linkedin_url or linkedin_url == "No":
             return {}

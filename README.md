@@ -269,6 +269,19 @@ cd HirePanel.Ai
 
 ---
 
+## Production Deployment & Containerization
+HirePanel.ai uses a modern, decoupled production architecture:
+- **Frontend Hosting**: The React application is built (`npm run build`) and hosted statically on platforms like **Vercel** or Netlify.
+- **Backend API Hosting**: The FastAPI backend is containerized using the provided `Dockerfile` and deployed to an autoscale serverless environment like **Google Cloud Run**.
+  
+### Packaging the Backend Container:
+To build the Python backend services for cloud deployment locally:
+```bash
+docker build -t hirepanel-backend .
+```
+
+---
+
 <div align="center">
   <i>Designed and built for the future of technical recruiting.</i>
 </div>
