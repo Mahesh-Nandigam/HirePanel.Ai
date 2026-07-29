@@ -20,24 +20,26 @@ HirePanel.ai structures candidate screening as a pipeline of cooperative, specia
 ```mermaid
 flowchart TD
     %% Define styles for clean appearance, larger font and high contrast text
-    classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:4px,color:#000,font-size:16px,font-weight:bold;
-    classDef agent fill:#f3e5f5,stroke:#6a1b9a,stroke-width:4px,color:#000,font-size:16px,font-weight:bold;
-    classDef step fill:#efebe9,stroke:#4e342e,stroke-width:4px,color:#000,font-size:16px,font-weight:bold;
-    classDef output fill:#e8f5e9,stroke:#2e7d32,stroke-width:4px,color:#000,font-size:16px,font-weight:bold;
+    classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:4px,color:#000,font-size:20px,font-weight:bold;
+    classDef agent fill:#f3e5f5,stroke:#6a1b9a,stroke-width:4px,color:#000,font-size:20px,font-weight:bold;
+    classDef step fill:#efebe9,stroke:#4e342e,stroke-width:4px,color:#000,font-size:20px,font-weight:bold;
+    classDef output fill:#e8f5e9,stroke:#2e7d32,stroke-width:4px,color:#000,font-size:20px,font-weight:bold;
 
     %% 1. Inputs
-    RecruiterJD(["<br/>Recruiter inputs Job Description<br/>&nbsp;"])
-    RecruiterPDF(["<br/>Recruiter uploads PDF Resumes<br/>&nbsp;"])
+    RecruiterJD(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Recruiter inputs Job Description&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    RecruiterPDF(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Recruiter uploads PDF Resumes&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+
+    RecruiterJD -----> RecruiterPDF
 
     %% 2. Intake
-    Intake(["<br/>Intake Agent Parses Profile<br/>&nbsp;"])
+    Intake(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Intake Agent Parses Profile&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     RecruiterPDF -----> Intake
 
     %% 3. Parsing & Routing
     subgraph ExtractionStage ["Data Extraction"]
-        ExtractLI(["Extracts LinkedIn URL"])
-        ExtractTxt(["Extracts Raw Resume Text"])
-        ExtractGH(["Extracts GitHub URL"])
+        ExtractLI(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts LinkedIn URL&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+        ExtractTxt(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts Raw Resume Text&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+        ExtractGH(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts GitHub URL&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     end
     style ExtractionStage fill:none,stroke:none;
 
@@ -46,25 +48,24 @@ flowchart TD
     Intake ----> ExtractGH
 
     %% 4. Parallel Assessment Agents
-    JDAgent(["<br/>JD Agent matches skills & experience<br/>&nbsp;"])
-    LIAgent(["<br/>LinkedIn Agent scrapes live data &<br/>evaluates career stability<br/>&nbsp;"])
-    GHAgent(["<br/>GitHub Agent analyzes commit<br/>history & codebase depth<br/>&nbsp;"])
+    JDAgent(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;JD Agent matches skills & experience&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    LIAgent(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;LinkedIn Agent scrapes live data &<br/>evaluates career stability&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    GHAgent(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;GitHub Agent analyzes commit<br/>history & codebase depth&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
 
-    RecruiterJD -----> JDAgent
     ExtractTxt -----> JDAgent
     
     ExtractLI -----> LIAgent
     ExtractGH -----> GHAgent
 
     %% 5. Cross Verification (Resume Agent runs LAST in this tier)
-    ResAgent(["<br/>Resume Agent evaluates technical<br/>claims using live GH/LI data<br/>&nbsp;"])
+    ResAgent(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Resume Agent evaluates technical<br/>claims using live GH/LI data&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     
     ExtractTxt -----> ResAgent
     LIAgent ---->|Cross-verifies claims| ResAgent
     GHAgent ---->|Cross-verifies claims| ResAgent
 
     %% 6. Final Deterministic Weighting
-    Decider(["<br/>Decider Agent applies deterministic weighting<br/>(Resume: 50%, GH: 20%, LI: 15%, JD: 15%)<br/>&nbsp;"])
+    Decider(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Decider Agent applies deterministic weighting<br/>(Resume: 50%, GH: 20%, LI: 15%, JD: 15%)&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     
     JDAgent -----> Decider
     LIAgent -----> Decider
@@ -72,7 +73,7 @@ flowchart TD
     ResAgent -----> Decider
 
     %% 7. Verdict
-    Verdict(["<br/>Final Output:<br/>HirePanel Passport Score (Tier & Percentile)<br/>& Verdict (HIRE/WAITLIST/REJECT)<br/>&nbsp;"])
+    Verdict(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Final Output:<br/>HirePanel Passport Score (Tier & Percentile)<br/>& Verdict (HIRE/WAITLIST/REJECT)&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     Decider -----> Verdict
 
     class RecruiterJD,RecruiterPDF input;
