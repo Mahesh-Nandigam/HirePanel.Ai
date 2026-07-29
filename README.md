@@ -183,55 +183,89 @@ hirepanel.ai/
 
 ## Installation & Setup Guide
 
-### 1. Clone the Repository
+### Prerequisites
+Make sure you have the following installed on your machine:
+- **Python 3.10 or higher**
+- **Node.js 18 or higher** (includes `npm`)
+- **A Groq Cloud API Key** (get one free at [console.groq.com](https://console.groq.com/))
+
+---
+
+### Step 1: Clone the Repository
+Open a terminal and run the commands below to clone the project and enter the folder:
 ```bash
 git clone https://github.com/Mahesh-Nandigam/HirePanel.Ai.git
 cd HirePanel.Ai
 ```
 
-### 2. Set Up the FastAPI Backend
-Create a virtual environment, activate it, and install python dependencies:
-```bash
-python -m venv .venv
+---
 
-# Activate on Windows (PowerShell):
-.venv\Scripts\Activate.ps1
+### Step 2: Set Up the Python Backend
+1. In your terminal (inside the root `HirePanel.Ai` folder), create a Python virtual environment:
+   ```bash
+   python -m venv .venv
+   ```
+2. Activate the virtual environment:
+   - **On Windows (PowerShell)**:
+     ```powershell
+     .venv\Scripts\Activate.ps1
+     ```
+   - **On Windows (Command Prompt)**:
+     ```cmd
+     .venv\Scripts\activate.bat
+     ```
+   - **On Linux / macOS**:
+     ```bash
+     source .venv/bin/activate
+     ```
+3. Install all backend python packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Create a `.env` configuration file in the root `HirePanel.Ai` folder:
+   Create a new file named `.env` and add your Groq API key:
+   ```env
+   DEMO_MODE=True
+   GROQ_API_KEY=your_groq_api_key_here
+   ```
+   > [!NOTE]
+   > `DEMO_MODE=True` uses the fast Groq Cloud endpoint. If you want to use a locally running Ollama model instead, set `DEMO_MODE=False`.
+5. Start the local FastAPI backend server:
+   ```bash
+   python -m uvicorn src.main:app --host 127.0.0.1 --port 8001 --reload
+   ```
+   The backend API is now running locally at `http://127.0.0.1:8001`. You can open `http://127.0.0.1:8001/docs` in your browser to view the interactive API playground.
 
-# Activate on Linux/macOS:
-source .venv/bin/activate
+---
 
-# Install dependencies:
-pip install -r requirements.txt
-```
+### Step 3: Set Up the React Frontend
+1. Open a **new, separate terminal window** or tab.
+2. Navigate to the `frontend` folder inside the cloned project:
+   ```bash
+   cd HirePanel.Ai/frontend
+   ```
+3. Install all frontend node packages:
+   ```bash
+   npm install
+   ```
+4. **[Optional] Connect the local frontend to your local backend**:
+   By default, the frontend calls the live deployed backend at `https://hirepanel-backend-111822887564.us-central1.run.app`. 
+   If you want your local frontend to connect to your local backend running on port `8001`:
+   - Open [frontend/src/App.jsx](file:///c:/Users/Mahesh%20Babu/Downloads/ANTIGRAVITY/hirepanel.ai/frontend/src/App.jsx) in your text editor.
+   - Replace the URL on line **64** and line **122** from `https://hirepanel-backend-111822887564.us-central1.run.app` to `http://127.0.0.1:8001`.
+5. Start the local frontend development server:
+   ```bash
+   npm run dev
+   ```
+6. Open your web browser and navigate to **`http://localhost:5173`** to run the app.
 
-Create a `.env` configuration file in the project root:
-```env
-DEMO_MODE=True
-GROQ_API_KEY=your_primary_key_here
-GROQ_API_KEY_1=your_second_key_here
-GROQ_API_KEY_2=your_third_key_here
-```
-> [!NOTE]
-> Set `DEMO_MODE=True` to prioritize Groq Cloud API endpoints for maximum speed. Set `DEMO_MODE=False` if you prefer local evaluations using Ollama.
+---
 
-Start the local backend server:
-```bash
-python -m uvicorn src.main:app --host 0.0.0.0 --port 8001 --reload
-```
-
-### 3. Set Up the React Frontend
-Open a separate terminal window, navigate to the frontend folder, install packages, and spin up the developer server:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 4. Running the Platform
-1. Navigate to the local URL (typically `http://localhost:5173`) in your browser.
-2. Input a Job Description (or use the provided developer template).
-3. Upload candidate resumes (PDF files).
-4. Hit **Start Evaluation** to view the live agent logging, debate transcript, and decider consensus matrices.
+### Step 4: Run an Evaluation
+1. In your browser at `http://localhost:5173`, type or paste a Job Description.
+2. Click **Next** to proceed to the upload step.
+3. Upload candidate resume PDF files.
+4. Click **Start Evaluation** to watch the agent panel evaluate the resumes, run their debate loop, and render the final consensus verdict live.
 
 ---
 
