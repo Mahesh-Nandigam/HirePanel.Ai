@@ -37,7 +37,7 @@ class NvidiaLLMClient:
         }
         
         # Enforce NVIDIA reasoning model
-        nvidia_model = model if "llama" in model.lower() else "meta/llama-3.3-70b-instruct"
+        nvidia_model = "meta/llama-3.3-70b-instruct"
         
         payload = {
             "model": nvidia_model,
