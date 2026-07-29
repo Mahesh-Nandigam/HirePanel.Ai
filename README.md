@@ -44,53 +44,56 @@ flowchart TD
     Intake([Intake Agent])
     RecruiterPDF --> Intake
 
-    %% 3. Parsing & Routing (Grouped at the same level)
+    %% 3. Parsing & Routing (Aligned horizontally to prevent crossed lines)
     subgraph ExtractionStage ["Extraction Stage (Parallel)"]
-        ExtractGH([Extracts GitHub URL])
         ExtractLI([Extracts LinkedIn URL])
         ExtractTxt([Extracts Raw Resume Text])
+        ExtractGH([Extracts GitHub URL])
     end
     style ExtractionStage fill:#eceff1,stroke:#607d8b,stroke-width:1.5px,color:#000;
 
-    Intake --> ExtractGH
     Intake --> ExtractLI
     Intake --> ExtractTxt
+    Intake --> ExtractGH
 
-    %% 4. Assessment Agents
-    GHAgent([GitHub Agent<br/>Checks commit history, projects & consistency])
-    LIAgent([LinkedIn Agent<br/>Checks work history, tenure stability & internships])
+    %% 4. Assessment Agents (First Level)
+    LIAgent([LinkedIn Agent<br/>Checks work history, tenure & internships])
     ResAgent([Resume Agent<br/>Reviews claimed skills like C++])
+    GHAgent([GitHub Agent<br/>Checks commit history, projects & consistency])
 
-    ExtractGH --> GHAgent
     ExtractLI --> LIAgent
     ExtractTxt --> ResAgent
+    ExtractGH --> GHAgent
 
-    %% Cross Verification Loop
-    ResAgent <-->|Cross-verifies claimed skills| GHAgent
+    %% Cross Verification Link (Horizontal)
+    ResAgent <-->|Verifies skills vs code| GHAgent
 
-    %% 5. Debate Panel (Discussion Loop)
+    %% 5. JD Agent Scoring
+    JDAgent([JD Agent<br/>Evaluates reports against requirements])
+    
+    ExtractTxt --> JDAgent
+    LIAgent -->|Shares LinkedIn Report & Score| JDAgent
+    GHAgent -->|Shares GitHub Report & Score| JDAgent
+
+    %% 6. Debate Panel (Discussion Loop)
+    HRPartner([HR Partner Agent<br/>Evaluates culture fit & communication])
+    TechLead([Tech Lead Agent<br/>Evaluates system design & code depth])
+
+    LIAgent --> HRPartner
     GHAgent --> TechLead
     ResAgent --> TechLead
-    LIAgent --> HRPartner
-    ExtractTxt --> JDAgent
 
-    subgraph DebatePanel ["Debate & Alignment Panel (Discussion Loop)"]
-        JDAgent([JD Agent<br/>Checks alignment against role requirements])
-        TechLead([Tech Lead Agent<br/>Evaluates system design & code depth])
-        HRPartner([HR Partner Agent<br/>Evaluates culture fit & communication])
-        
-        %% Discussion Loop Arrows
-        TechLead <-->|Debates technical vs culture| HRPartner
-        HRPartner <-->|Debates culture vs requirements| JDAgent
-        JDAgent <-->|Debates requirements vs technical| TechLead
+    subgraph DebatePanel ["Debate Panel (Discussion Loop)"]
+        HRPartner <-->|Debates culture, longevity vs technical depth| TechLead
     end
     style DebatePanel fill:#fff3e0,stroke:#fb8c00,stroke-width:2.5px;
 
-    %% 6. Verdict
+    %% 7. Verdict
     Decider([Decider Agent])
     Verdict([Final Verdict<br/>HIRE, WAITLIST, or REJECT])
 
-    DebatePanel --> Decider
+    JDAgent -->|Feeds JD Alignment Score| Decider
+    DebatePanel -->|Feeds Debate Verdict & Transcripts| Decider
     Decider --> Verdict
 
     class RecruiterJD,RecruiterPDF input;
@@ -118,10 +121,10 @@ flowchart TD
 - **GitHub Agent:** Scans the candidate's GitHub footprint to inspect commit frequency, codebase complexity, project architectures, and coding consistency.
 - **LinkedIn Agent:** Examines career timeline stability. Checks work tenure longevity, patterns of switching between employers, internship completions, and general trajectory consistency.
 - **Resume Agent:** Reviews the candidate's self-claimed credentials and technical competencies (e.g. C++). Cross-verifies these claims with the GitHub Agent to confirm if the candidate has actual project repositories backing up their stated expertise.
-- **JD Agent:** Maps the parsed candidate profile directly against the target Job Description to identify matching competencies, missing requirements, and overall alignment.
+- **JD Agent:** Receives the raw resume text alongside assessments and scores from the LinkedIn and GitHub agents to analyze candidate alignment with the target job description and output a JD Alignment Score.
 - **Tech Lead Agent:** Focuses strictly on technical execution. Evaluates the candidate's system design depth, technical architecture choices, and code quality.
 - **HR Partner Agent:** Evaluates culture fit, communication competence, team alignment, and professional durability.
-- **Decider Agent:** Reviews the final scores, aggregates weights, reads the transcript of the debate between the JD, Tech Lead, and HR agents, and renders a final verdict (HIRE, WAITLIST, or REJECT) with an executive summary.
+- **Decider Agent:** Reviews the final scores, aggregates weights, reads the transcript of the debate between the Tech Lead and HR agents, and renders a final verdict (HIRE, WAITLIST, or REJECT) with an executive summary.
 
 ---
 
