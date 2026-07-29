@@ -105,6 +105,21 @@ flowchart TD
 
 ---
 
+## Workflow Guide
+
+- **Step 1: Job Description Parsing** - Recruiter inputs the job description. The Job Description Agent extracts required skills, expectations, and role details.
+- **Step 2: Resume Ingestion** - Recruiter uploads PDF resumes (supports up to 10,000 files in bulk). The Intake Agent parses contact details, text, and portfolio URLs.
+- **Step 3: Extraction** - The Intake Agent extracts LinkedIn URLs, raw resume text, and GitHub URLs in parallel.
+- **Step 4: Specialized Assessments** - 
+  - **LinkedIn Agent** checks work history, internship completion, and career longevity.
+  - **GitHub Agent** analyzes commit activity, code quality, and project complexity.
+  - **Resume Agent** reads candidate-claimed skills and cross-verifies with the GitHub Agent to confirm real repository evidence exists.
+- **Step 5: JD Score Mapping** - The **JD Agent** collects the LinkedIn and GitHub assessment reports and scores to calculate a unified JD Alignment Score.
+- **Step 6: Committee Discussion** - The **Tech Lead Agent** (evaluating technical depth) and the **HR Partner Agent** (evaluating culture fit and longevity) debate the candidate's profile in a discussion loop.
+- **Step 7: Final Consensus Verdict** - The **Decider Agent** aggregates the JD alignment score and debate transcripts to output the final verdict (**HIRE**, **WAITLIST**, or **REJECT**).
+
+---
+
 ## Key Features
 
 - **Fast Evaluations (Groq Cloud):** Processes candidate profiles concurrently using Llama-3.3-70b on Groq, completing evaluations in less than 30 seconds.
