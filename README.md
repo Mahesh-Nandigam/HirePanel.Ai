@@ -32,20 +32,25 @@ flowchart TD
     classDef step fill:#efebe9,stroke:#3e2723,stroke-width:1px,color:#000;
     classDef output fill:#e8f5e9,stroke:#1b5e20,stroke-width:1px,color:#000;
 
-    %% 1. Inputs
+    %% 1. Inputs & Initial Parsing
     RecruiterJD([Recruiter inputs Job Description])
+    JDAgentInput([Job Description Agent<br/>Parses role details, expectations & required skills])
     RecruiterPDF([Recruiter uploads PDF Resumes<br/>Supports 1 to 10,000 resumes in bulk])
     
-    RecruiterJD --> RecruiterPDF
+    RecruiterJD --> JDAgentInput
+    JDAgentInput --> RecruiterPDF
 
     %% 2. Intake
     Intake([Intake Agent])
     RecruiterPDF --> Intake
 
-    %% 3. Parsing & Routing
-    ExtractGH([Extracts GitHub URL])
-    ExtractLI([Extracts LinkedIn URL])
-    ExtractTxt([Extracts Raw Resume Text])
+    %% 3. Parsing & Routing (Grouped at the same level)
+    subgraph ExtractionStage ["Extraction Stage (Parallel)"]
+        ExtractGH([Extracts GitHub URL])
+        ExtractLI([Extracts LinkedIn URL])
+        ExtractTxt([Extracts Raw Resume Text])
+    end
+    style ExtractionStage fill:#eceff1,stroke:#607d8b,stroke-width:1.5px,color:#000;
 
     Intake --> ExtractGH
     Intake --> ExtractLI
@@ -55,35 +60,31 @@ flowchart TD
     GHAgent([GitHub Agent<br/>Checks commit history, projects & consistency])
     LIAgent([LinkedIn Agent<br/>Checks work history, tenure stability & internships])
     ResAgent([Resume Agent<br/>Reviews claimed skills like C++])
-    JDAgent([JD Agent<br/>Checks alignment against role requirements])
 
     ExtractGH --> GHAgent
     ExtractLI --> LIAgent
     ExtractTxt --> ResAgent
-    ExtractTxt --> JDAgent
 
     %% Cross Verification Loop
     ResAgent <-->|Cross-verifies claimed skills| GHAgent
 
-    %% 5. Debate Panel
-    TechLead([Tech Lead Agent<br/>Evaluates system design & code depth])
-    HRPartner([HR Partner Agent<br/>Evaluates culture fit & communication])
-
+    %% 5. Debate Panel (Discussion Loop)
     GHAgent --> TechLead
     ResAgent --> TechLead
     LIAgent --> HRPartner
-    
-    %% Debate Panel Connection
-    subgraph DebatePanel [Debate & Alignment Panel]
-        JDAgent
-        TechLead
-        HRPartner
-    end
+    ExtractTxt --> JDAgent
 
-    %% Debate Flow
-    JDAgent <-->|Debates role fit| TechLead
-    TechLead <-->|Debates viability| HRPartner
-    HRPartner <-->|Debates culture & alignment| JDAgent
+    subgraph DebatePanel ["Debate & Alignment Panel (Discussion Loop)"]
+        JDAgent([JD Agent<br/>Checks alignment against role requirements])
+        TechLead([Tech Lead Agent<br/>Evaluates system design & code depth])
+        HRPartner([HR Partner Agent<br/>Evaluates culture fit & communication])
+        
+        %% Discussion Loop Arrows
+        TechLead <-->|Debates technical vs culture| HRPartner
+        HRPartner <-->|Debates culture vs requirements| JDAgent
+        JDAgent <-->|Debates requirements vs technical| TechLead
+    end
+    style DebatePanel fill:#fff3e0,stroke:#fb8c00,stroke-width:2.5px;
 
     %% 6. Verdict
     Decider([Decider Agent])
@@ -93,7 +94,7 @@ flowchart TD
     Decider --> Verdict
 
     class RecruiterJD,RecruiterPDF input;
-    class Intake,ExtractGH,ExtractLI,ExtractTxt step;
+    class JDAgentInput,Intake,ExtractGH,ExtractLI,ExtractTxt step;
     class GHAgent,LIAgent,ResAgent,JDAgent,TechLead,HRPartner,Decider agent;
     class Verdict output;
 ```
