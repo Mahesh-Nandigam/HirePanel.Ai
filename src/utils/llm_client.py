@@ -2,6 +2,7 @@ import os
 import time
 import requests
 from dotenv import load_dotenv
+import threading
 
 class MockChoiceMessage:
     def __init__(self, content):
@@ -19,6 +20,7 @@ load_dotenv()
 
 class NvidiaLLMClient:
     _instance = None
+    _semaphore = threading.Semaphore(2)  # Limit to 2 concurrent API calls to prevent NVIDIA rate-limits and timeouts
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -54,7 +56,8 @@ class NvidiaLLMClient:
         for attempt in range(3):
             start_time = time.time()
             try:
-                response = requests.post(url, headers=headers, json=payload, timeout=30.0)
+                with self._semaphore:
+                    response = requests.post(url, headers=headers, json=payload, timeout=60.0)
                 latency = time.time() - start_time
                 print(f"[NVIDIA API] Attempt {attempt+1}: Responded in {latency:.3f}s. Status: {response.status_code}")
                 
