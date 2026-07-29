@@ -27,72 +27,72 @@ HirePanel.ai structures candidate screening as a pipeline of cooperative, specia
 ```mermaid
 flowchart TD
     %% Define styles for clean appearance, larger font and high contrast text
-    classDef input fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000,font-size:15px,font-weight:bold;
-    classDef agent fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000,font-size:15px,font-weight:bold;
-    classDef step fill:#efebe9,stroke:#3e2723,stroke-width:2px,color:#000,font-size:15px,font-weight:bold;
-    classDef output fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px,color:#000,font-size:15px,font-weight:bold;
+    classDef input fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#000,font-size:16px,font-weight:bold;
+    classDef agent fill:#f3e5f5,stroke:#6a1b9a,stroke-width:3px,color:#000,font-size:16px,font-weight:bold;
+    classDef step fill:#efebe9,stroke:#4e342e,stroke-width:3px,color:#000,font-size:16px,font-weight:bold;
+    classDef output fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#000,font-size:16px,font-weight:bold;
 
     %% 1. Inputs & Initial Parsing
-    RecruiterJD([&nbsp;&nbsp;Recruiter inputs Job Description&nbsp;&nbsp;])
-    JDAgentInput([&nbsp;&nbsp;Job Description Agent parses role details, expectations & skills&nbsp;&nbsp;])
-    RecruiterPDF([&nbsp;&nbsp;Recruiter uploads PDF Resumes &nbsp;Supports 1 to 10,000 resumes bulk&nbsp;&nbsp;])
+    RecruiterJD([&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Recruiter inputs Job Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;])
+    JDAgentInput([&nbsp;&nbsp;&nbsp;&nbsp;Job Description Agent parses role details, expectations & required skills&nbsp;&nbsp;&nbsp;&nbsp;])
+    RecruiterPDF(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Recruiter uploads PDF Resumes&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;Supports 1 to 10,000 resumes in bulk&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     
-    RecruiterJD --> JDAgentInput
-    JDAgentInput --> RecruiterPDF
+    RecruiterJD -----> JDAgentInput
+    JDAgentInput -----> RecruiterPDF
 
     %% 2. Intake
-    Intake([&nbsp;&nbsp;Intake Agent&nbsp;&nbsp;])
-    RecruiterPDF --> Intake
+    Intake(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Intake Agent Parses Profile&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    RecruiterPDF -----> Intake
 
     %% 3. Parsing & Routing (Aligned horizontally to prevent crossed lines)
-    ExtractLI([&nbsp;&nbsp;Extracts LinkedIn URL&nbsp;&nbsp;])
-    ExtractTxt([&nbsp;&nbsp;Extracts Raw Resume Text&nbsp;&nbsp;])
-    ExtractGH([&nbsp;&nbsp;Extracts GitHub URL&nbsp;&nbsp;])
+    ExtractLI(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts LinkedIn URL&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    ExtractTxt(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts Raw Resume Text&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    ExtractGH(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts GitHub URL&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
 
-    Intake --> ExtractLI
-    Intake --> ExtractTxt
-    Intake --> ExtractGH
+    Intake ----> ExtractLI
+    Intake ----> ExtractTxt
+    Intake ----> ExtractGH
 
     %% 4. Assessment Agents (First Level)
-    LIAgent([&nbsp;&nbsp;LinkedIn Agent checks work history, tenure & internships&nbsp;&nbsp;])
-    ResAgent([&nbsp;&nbsp;Resume Agent reviews claimed skills like C++&nbsp;&nbsp;])
-    GHAgent([&nbsp;&nbsp;GitHub Agent checks commit history, projects & consistency&nbsp;&nbsp;])
+    LIAgent(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;LinkedIn Agent checks work history,&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;tenure stability & internship completion&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    ResAgent(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Resume Agent reviews claimed skills&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;like C++ and technical competencies&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    GHAgent(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;GitHub Agent checks commit history,&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;project complexity & coding consistency&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
 
-    ExtractLI --> LIAgent
-    ExtractTxt --> ResAgent
-    ExtractGH --> GHAgent
+    ExtractLI -----> LIAgent
+    ExtractTxt -----> ResAgent
+    ExtractGH -----> GHAgent
 
     %% Cross Verification Link (Horizontal)
-    ResAgent <-->|Verifies skills vs code| GHAgent
+    ResAgent <-->|Verifies skills vs repository code| GHAgent
 
     %% 5. JD Agent Scoring
-    JDAgent([&nbsp;&nbsp;JD Agent evaluates reports against requirements&nbsp;&nbsp;])
+    JDAgent(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;JD Agent evaluates candidate reports&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;against target job requirements&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     
-    ExtractTxt --> JDAgent
-    LIAgent -->|Shares LinkedIn Report & Score| JDAgent
-    GHAgent -->|Shares GitHub Report & Score| JDAgent
+    ExtractTxt -----> JDAgent
+    LIAgent ---->|Shares LinkedIn Report & Score| JDAgent
+    GHAgent ---->|Shares GitHub Report & Score| JDAgent
 
     %% 6. Debate Panel (Discussion Loop)
-    HRPartner([&nbsp;&nbsp;HR Partner Agent evaluates culture fit & communication&nbsp;&nbsp;])
-    TechLead([&nbsp;&nbsp;Tech Lead Agent evaluates system design & code depth&nbsp;&nbsp;])
+    HRPartner(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;HR Partner Agent evaluates&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;candidate culture fit & communication&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    TechLead(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Tech Lead Agent evaluates&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;candidate system design & code depth&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
 
-    LIAgent --> HRPartner
-    GHAgent --> TechLead
-    ResAgent --> TechLead
+    LIAgent -----> HRPartner
+    GHAgent -----> TechLead
+    ResAgent -----> TechLead
 
     subgraph DebatePanel ["Debate Panel (Discussion Loop)"]
         HRPartner <-->|Debates culture, longevity vs technical depth| TechLead
     end
     %% style DebatePanel background transparent so background lines are visible
-    style DebatePanel fill:none,stroke:#fb8c00,stroke-width:3px;
+    style DebatePanel fill:none,stroke:#fb8c00,stroke-width:3.5px;
 
     %% 7. Verdict
-    Decider([&nbsp;&nbsp;Decider Agent&nbsp;&nbsp;])
-    Verdict([&nbsp;&nbsp;Final Verdict: HIRE, WAITLIST, or REJECT&nbsp;&nbsp;])
+    Decider(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Decider Agent weighs score weights&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;&nbsp;&nbsp;&nbsp;and debate outcomes for consensus&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    Verdict(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Final Verdict: HIRE, WAITLIST, or REJECT&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
 
-    JDAgent -->|Feeds JD Alignment Score| Decider
-    DebatePanel -->|Feeds Debate Verdict & Transcripts| Decider
-    Decider --> Verdict
+    JDAgent ----->|Feeds JD Alignment Score| Decider
+    DebatePanel ----->|Feeds Debate Verdict & Transcripts| Decider
+    Decider -----> Verdict
 
     class RecruiterJD,RecruiterPDF input;
     class JDAgentInput,Intake,ExtractGH,ExtractLI,ExtractTxt step;
