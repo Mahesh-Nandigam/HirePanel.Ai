@@ -44,10 +44,13 @@ flowchart TD
     Intake(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Intake Agent Parses Profile&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
     RecruiterPDF -----> Intake
 
-    %% 3. Parsing & Routing (Aligned horizontally to prevent crossed lines)
-    ExtractLI(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts LinkedIn URL&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
-    ExtractTxt(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts Raw Resume Text&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
-    ExtractGH(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts GitHub URL&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    %% 3. Parsing & Routing (Aligned horizontally on the same line to prevent crossed lines)
+    subgraph ExtractionStage [" "]
+        ExtractLI(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts LinkedIn URL&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+        ExtractTxt(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts Raw Resume Text&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+        ExtractGH(["<br/>&nbsp;&nbsp;&nbsp;&nbsp;Extracts GitHub URL&nbsp;&nbsp;&nbsp;&nbsp;<br/>&nbsp;"])
+    end
+    style ExtractionStage fill:none,stroke:none;
 
     Intake ----> ExtractLI
     Intake ----> ExtractTxt
