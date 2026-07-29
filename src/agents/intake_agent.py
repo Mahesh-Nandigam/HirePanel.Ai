@@ -76,10 +76,8 @@ class IntakeAgent:
         if not text.strip(): return {"candidate_name": "Unknown", "github_url": "No", "linkedin_url": "No", "resume_summary": ""}
         
         # 1. Regex for URLs (extremely fast and 100% accurate)
-        github_match = re.search(r'(?:https?://)?(?:www\.)?github\.com/[A-Za-z0-9_-]+', text, re.IGNORECASE)
-        linkedin_match = re.search(r'(?:https?://)?(?:www\.)?linkedin\.com/in/[A-Za-z0-9_-]+', text, re.IGNORECASE)
-        gh = github_match.group(0) if github_match else "No"
-        li = linkedin_match.group(0) if linkedin_match else "No"
+        github_matches = re.findall(r'(?:https?://)?(?:www\.)?github\.com/[A-Za-z0-9_-]+', text, re.IGNORECASE)
+        linkedin_matches = re.findall(r'(?:https?://)?(?:www\.)?linkedin\.com/in/[A-Za-z0-9_-]+', text, re.IGNORECASE)
 
         # Sanitize URLs
         def sanitize_url(url, site):
@@ -96,8 +94,19 @@ class IntakeAgent:
                 return "No"
             return url
 
-        gh = sanitize_url(gh, "github")
-        li = sanitize_url(li, "linkedin")
+        gh = "No"
+        for match in github_matches:
+            valid_gh = sanitize_url(match, "github")
+            if valid_gh != "No":
+                gh = valid_gh
+                break
+                
+        li = "No"
+        for match in linkedin_matches:
+            valid_li = sanitize_url(match, "linkedin")
+            if valid_li != "No":
+                li = valid_li
+                break
 
         if gh and gh != "No":
             gh = gh.replace("www.", "").replace("https://", "").replace("http://", "").strip()
