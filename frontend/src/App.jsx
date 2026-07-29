@@ -183,12 +183,22 @@ function App() {
 
   const sortedCandidates = [...vettingResults]
     .filter(c => c.payload)
-    .sort((a, b) => b.payload.finalScore - a.payload.finalScore);
+    .sort((a, b) => b.payload.finalScore - a.payload.finalScore)
+    .map((c, index, array) => {
+      const percentile = ((array.length - index) / array.length) * 100;
+      let tier = 'D tier';
+      if (c.payload.finalScore >= 60) tier = 'A tier';
+      else if (c.payload.finalScore >= 50) tier = 'B tier';
+      else if (c.payload.finalScore >= 40) tier = 'C tier';
+      
+      const hirePanelScore = `${tier} · ${percentile.toFixed(1)}th percentile · score ${c.payload.finalScore.toFixed(1)}`;
+      return { ...c, payload: { ...c.payload, tier, percentile, hirePanelScore } };
+    });
 
   const handleExportCSV = () => {
     if (sortedCandidates.length === 0) return;
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Rank,Candidate Name,Status,Fit Score,Resume Depth,GitHub Code,LinkedIn Stability,JD Fit Match,Manager Justification\n";
+    csvContent += "Rank,Candidate Name,Status,Fit Score,Resume Depth,GitHub Code,LinkedIn Stability,JD Fit Match,HirePanel Passport Score,Manager Justification\n";
     sortedCandidates.forEach((c, index) => {
       const p = c.payload;
       const rank = index + 1;
@@ -199,9 +209,10 @@ function App() {
       const github = p.github;
       const linkedin = p.linkedin;
       const jdMatch = p.jdMatch;
+      const passportScore = `"${p.hirePanelScore}"`;
       let justification = p.messages?.find(m => m.agent === 'Decider')?.text || "Fit determined by consensus.";
       justification = `"${justification.replace(/"/g, '""')}"`;
-      const row = `${rank},${name},${status},${score},${resume},${github},${linkedin},${jdMatch},${justification}`;
+      const row = `${rank},${name},${status},${score},${resume},${github},${linkedin},${jdMatch},${passportScore},${justification}`;
       csvContent += row + "\n";
     });
     const encodedUri = encodeURI(csvContent);

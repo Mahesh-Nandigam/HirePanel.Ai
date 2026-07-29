@@ -25,7 +25,7 @@ export default function Leaderboard({
               <th className="px-6 py-4 text-center w-20">Rank</th>
               <th className="px-6 py-4">Candidate Name</th>
               <th className="px-6 py-4 text-center">Fit Score</th>
-              <th className="px-6 py-4 text-center">JD Match</th>
+              <th className="px-6 py-4 text-center">HirePanel Score</th>
               <th className="px-6 py-4">Manager Justification</th>
             </tr>
           </thead>
@@ -50,8 +50,8 @@ export default function Leaderboard({
                   <td className="px-6 py-4 text-center font-extrabold text-primary text-base">
                     {Math.round(payload.finalScore)}
                   </td>
-                  <td className="px-6 py-4 text-center font-semibold">
-                    {payload.jdMatch}/10
+                  <td className="px-6 py-4 text-center font-semibold text-xs whitespace-nowrap">
+                    {payload.hirePanelScore}
                   </td>
                   <td className="px-6 py-4 text-slate-400 text-xs max-w-md leading-relaxed">
                     {payload.messages?.find(m => m.agent === 'Decider')?.text || "Fit determined by consensus."}
