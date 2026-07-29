@@ -39,7 +39,7 @@ class NvidiaLLMClient:
         }
         
         # Enforce NVIDIA reasoning model
-        nvidia_model = "meta/llama-3.3-70b-instruct"
+        nvidia_model = "meta/llama-3.1-8b-instruct"
         
         payload = {
             "model": nvidia_model,
@@ -57,7 +57,7 @@ class NvidiaLLMClient:
             start_time = time.time()
             try:
                 with self._semaphore:
-                    response = requests.post(url, headers=headers, json=payload, timeout=60.0)
+                    response = requests.post(url, headers=headers, json=payload, timeout=120.0)
                 latency = time.time() - start_time
                 print(f"[NVIDIA API] Attempt {attempt+1}: Responded in {latency:.3f}s. Status: {response.status_code}")
                 
