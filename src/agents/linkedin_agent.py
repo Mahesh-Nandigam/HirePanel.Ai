@@ -4,7 +4,7 @@ import re
 import requests
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-from src.utils.groq_client import groq_rotator
+from src.utils.llm_client import llm_client
 
 load_dotenv()
 
@@ -96,7 +96,7 @@ class LinkedInAgent:
 
         for attempt in range(3):
             try:
-                chat_completion = groq_rotator.execute_completion(
+                chat_completion = llm_client.execute_completion(
                     messages=[
                         {"role": "system", "content": "You are a JSON assistant. Output valid JSON."},
                         {"role": "user", "content": prompt + "\nOutput JSON exactly matching this format:\n" + get_simple_schema(LinkedInContext)}

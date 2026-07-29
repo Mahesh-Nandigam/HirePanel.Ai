@@ -5,7 +5,7 @@ import time
 from pypdf import PdfReader
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-from src.utils.groq_client import groq_rotator
+from src.utils.llm_client import llm_client
 
 load_dotenv()
 

@@ -2,7 +2,7 @@ import os
 import json
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-from src.utils.groq_client import groq_rotator
+from src.utils.llm_client import llm_client
 
 load_dotenv()
 
@@ -38,7 +38,7 @@ class JDAgent:
     def parse_jd(self, job_description: str) -> dict:
         prompt = f"Parse this job description and extract key structured details.\nJD:\n{job_description}"
         try:
-            chat_completion = groq_rotator.execute_completion(
+            chat_completion = llm_client.execute_completion(
                 messages=[
                     {"role": "system", "content": "You are a JSON assistant. Output valid JSON."},
                     {"role": "user", "content": prompt + "\nOutput JSON exactly matching this format:\n" + get_simple_schema(JDExtraction)}
@@ -76,7 +76,7 @@ class JDAgent:
             f"Be SPECIFIC. Reference actual skills and projects from the resume."
         )
         try:
-            chat_completion = groq_rotator.execute_completion(
+            chat_completion = llm_client.execute_completion(
                 messages=[
                     {"role": "system", "content": "You are a JSON assistant. Output valid JSON."},
                     {"role": "user", "content": prompt + "\nOutput JSON exactly matching this format:\n" + get_simple_schema(JDEvaluation)}
