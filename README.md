@@ -1,15 +1,8 @@
-<div align="center">
-  <img src="https://img.shields.io/badge/HirePanel.ai-Multi--Agent%20Recruiting-7928CA?style=for-the-badge&logo=cpu-filled&logoColor=white" alt="HirePanel Banner" />
+
 
   # HirePanel.ai
   ### *The Autonomous AI Hiring Committee that Vets Candidates in <30 Seconds*
 
-  [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-  [![Groq](https://img.shields.io/badge/Groq_Cloud-F55036?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com/)
-  [![Llama 3](https://img.shields.io/badge/Llama_3.3-0466C8?style=for-the-badge&logo=meta&logoColor=white)](https://meta.ai/)
-  [![Ollama](https://img.shields.io/badge/Ollama_Fallback-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.com/)
 
   **Manual recruiting is cooked.**  
   *HirePanel.ai* is an elite, multi-agent AI panel that acts as a fully autonomous hiring committee. It reads resumes, extracts verifiable evidence, crawls GitHub and LinkedIn, debates alignment on technical and culture fits, and renders an executive verdict—all in under 30 seconds.
