@@ -90,7 +90,8 @@ class LinkedInAgent:
                 f"- 9-10: Long tenures (2+ years), clear promotions, leadership, mentoring programs\n"
                 f"- 7-8: Stable career with good progression, some leadership\n"
                 f"- 5-6: Short tenures or limited progression, early career\n"
-                f"- 3-4: Frequent job hopping, no clear direction, only internships\n\n"
+                f"- 3-4: Frequent job hopping, no clear direction, only internships\n"
+                f"- CORPORATE PENALTY RULE: If the candidate lacks formal professional experience at a real company (e.g., they only list student clubs, internships, 'Class Representative', or personal projects), you MUST cap their score at 5.0 regardless of their technical skills.\n\n"
                 f"Your chat_message MUST reference SPECIFIC job roles, companies, or tenure patterns from the resume. Never be generic."
             )
 

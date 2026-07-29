@@ -50,7 +50,8 @@ class ResumeAgent:
             f"- 9-10: Deep expertise verified by open-source work/LinkedIn, production systems, quantified impact\n"
             f"- 7-8: Good breadth with some depth, real projects, minor or no discrepancies\n"
             f"- 5-6: Decent fundamentals but limited depth or mostly academic projects. Some unverified claims.\n"
-            f"- 3-4: Surface-level skills listing, no real project evidence, or major discrepancies/exaggerations discovered.\n\n"
+            f"- 3-4: Surface-level skills listing, no real project evidence, or major discrepancies/exaggerations discovered.\n"
+            f"- CORPORATE PENALTY RULE: If the candidate lacks formal professional experience at a real company (e.g., they only list student clubs, internships, 'Class Representative', or personal projects), you MUST cap their score at 5.0 regardless of their technical skills.\n\n"
             f"IMPORTANT: strengths and concerns MUST cite SPECIFIC technologies, projects, or facts from the resume AND explicitly mention if they are confirmed or contradicted by GitHub/LinkedIn.\n"
             f"chat_message must be a rich, candidate-specific narrative discussing their real capability and any discrepancies found."
         )

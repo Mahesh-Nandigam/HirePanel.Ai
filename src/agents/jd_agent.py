@@ -72,7 +72,8 @@ class JDAgent:
             f"- 9-10: All required skills present with strong evidence + preferred skills\n"
             f"- 7-8: Most required skills present, minor gaps\n"
             f"- 5-6: Some required skills missing, partial alignment\n"
-            f"- 3-4: Major skill gaps, poor alignment\n\n"
+            f"- 3-4: Major skill gaps, poor alignment\n"
+            f"- CORPORATE PENALTY RULE: If the candidate lacks formal professional experience at a real company (e.g., they only list student clubs, internships, 'Class Representative', or personal projects), you MUST cap their score at 5.0 regardless of their technical skills.\n\n"
             f"Be SPECIFIC. Reference actual skills and projects from the resume."
         )
         try:
