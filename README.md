@@ -1,8 +1,15 @@
-
+<div align="center">
+  <img src="https://img.shields.io/badge/HirePanel.ai-Multi--Agent%20Recruiting-7928CA?style=for-the-badge&logo=cpu-filled&logoColor=white" alt="HirePanel Banner" />
 
   # HirePanel.ai
   ### The Autonomous AI Hiring Committee that Vets Candidates in less than 30 seconds
 
+  [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+  [![Groq](https://img.shields.io/badge/Groq_Cloud-F55036?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com/)
+  [![Llama 3](https://img.shields.io/badge/Llama_3.3-0466C8?style=for-the-badge&logo=meta&logoColor=white)](https://meta.ai/)
+  [![Ollama](https://img.shields.io/badge/Ollama_Fallback-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.com/)
 
   HirePanel.ai is a multi-agent screening system that automates the initial stages of technical recruiting. By parsing uploaded resumes, analyzing candidate codebases on GitHub, evaluating work history on LinkedIn, and running a structured debate between virtual Tech Lead and HR roles, HirePanel delivers a comprehensive candidate evaluation and consensus verdict in under 30 seconds.
 
@@ -15,69 +22,80 @@
 
 ## Architecture and Agent Choreography
 
-HirePanel.ai structures candidate screening as a pipeline of cooperative, specialized AI agents. This structure ensures that candidates are evaluated from multiple perspectives (such as technical depth and team alignment) before a final decision is reached.
+HirePanel.ai structures candidate screening as a pipeline of cooperative, specialized AI agents. The workflow progresses sequentially from the initial setup down to the final verdict:
 
 ```mermaid
 flowchart TD
     %% Define styles for clean appearance
     classDef input fill:#e1f5fe,stroke:#01579b,stroke-width:1px;
     classDef agent fill:#f3e5f5,stroke:#4a148c,stroke-width:1px;
-    classDef process fill:#efebe9,stroke:#3e2723,stroke-width:1px;
+    classDef step fill:#efebe9,stroke:#3e2723,stroke-width:1px;
     classDef output fill:#e8f5e9,stroke:#1b5e20,stroke-width:1px;
 
-    subgraph Inputs [1. Inputs]
-        JD[Job Description]
-        PDF[PDF Resumes <br/> Supports bulk upload from 1 up to 10,000 files]
-    end
-    class Inputs,JD,PDF input;
+    %% 1. Inputs
+    RecruiterJD([Recruiter inputs Job Description])
+    RecruiterPDF([Recruiter uploads PDF Resumes<br/>Supports 1 to 10,000 resumes in bulk])
+    
+    RecruiterJD --> RecruiterPDF
 
-    subgraph IntakeStage [2. Intake and Parsing]
-        Intake[Intake Agent]
-        PDF --> Intake
-    end
-    class IntakeStage,Intake process;
+    %% 2. Intake
+    Intake([Intake Agent])
+    RecruiterPDF --> Intake
 
-    subgraph RoutingStage [3. URL and Data Extraction]
-        Parsed[Parsed Candidate Profile]
-        Intake --> Parsed
-    end
-    class RoutingStage,Parsed process;
+    %% 3. Parsing & Routing
+    ExtractGH([Extracts GitHub URL])
+    ExtractLI([Extracts LinkedIn URL])
+    ExtractTxt([Extracts Raw Resume Text])
 
-    subgraph Extractors [4. Parallel Assessment]
-        GH_Agent[GitHub Agent]
-        LI_Agent[LinkedIn Agent]
-        JD_Agent[JD Agent]
-        Res_Agent[Resume Agent]
-        
-        Parsed -->|Extracts and routes GitHub URL| GH_Agent
-        Parsed -->|Extracts and routes LinkedIn URL| LI_Agent
-        Parsed -->|Routes resume text| JD_Agent
-        Parsed -->|Routes resume text| Res_Agent
-    end
-    class Extractors,GH_Agent,LI_Agent,JD_Agent,Res_Agent agent;
+    Intake --> ExtractGH
+    Intake --> ExtractLI
+    Intake --> ExtractTxt
 
-    subgraph EvaluationPanel [5. Debate Committee]
-        TechLead[Tech Lead Agent<br/>Evaluates system design & code depth]
-        HR[HR Partner Agent<br/>Evaluates longevity & culture fit]
-        
-        GH_Agent --> TechLead
-        Res_Agent --> TechLead
-        LI_Agent --> HR
-        JD_Agent --> HR
-        
-        TechLead <-->|Consensus debate & score matrix| HR
-    end
-    class EvaluationPanel,TechLead,HR agent;
+    %% 4. Assessment Agents
+    GHAgent([GitHub Agent<br/>Checks commit history, projects & consistency])
+    LIAgent([LinkedIn Agent<br/>Checks work history, tenure stability & internships])
+    ResAgent([Resume Agent<br/>Reviews claimed skills like C++])
+    JDAgent([JD Agent<br/>Checks alignment against role requirements])
 
-    subgraph DecisionStage [6. Verdict Rendering]
-        Decider[Decider Agent]
-        Verdict[Final Verdict<br/>HIRE, WAITLIST, or REJECT]
-        
-        TechLead --> Decider
-        HR --> Decider
-        Decider --> Verdict
+    ExtractGH --> GHAgent
+    ExtractLI --> LIAgent
+    ExtractTxt --> ResAgent
+    ExtractTxt --> JDAgent
+
+    %% Cross Verification Loop
+    ResAgent <-->|Cross-verifies claimed skills| GHAgent
+
+    %% 5. Debate Panel
+    TechLead([Tech Lead Agent<br/>Evaluates system design & code depth])
+    HRPartner([HR Partner Agent<br/>Evaluates culture fit & communication])
+
+    GHAgent --> TechLead
+    ResAgent --> TechLead
+    LIAgent --> HRPartner
+    
+    %% Debate Panel Connection
+    subgraph DebatePanel [Debate & Alignment Panel]
+        JDAgent
+        TechLead
+        HRPartner
     end
-    class DecisionStage,Decider,Verdict output;
+
+    %% Debate Flow
+    JDAgent <-->|Debates role fit| TechLead
+    TechLead <-->|Debates viability| HRPartner
+    HRPartner <-->|Debates culture & alignment| JDAgent
+
+    %% 6. Verdict
+    Decider([Decider Agent])
+    Verdict([Final Verdict<br/>HIRE, WAITLIST, or REJECT])
+
+    DebatePanel --> Decider
+    Decider --> Verdict
+
+    class RecruiterJD,RecruiterPDF input;
+    class Intake,ExtractGH,ExtractLI,ExtractTxt step;
+    class GHAgent,LIAgent,ResAgent,JDAgent,TechLead,HRPartner,Decider agent;
+    class Verdict output;
 ```
 
 ---
@@ -95,15 +113,14 @@ flowchart TD
 
 ## Meet The Committee
 
-| Agent | Focus Area | Source Inputs | Key Output |
-| :--- | :--- | :--- | :--- |
-| **Intake Agent** | Information Extraction | Raw PDF Resume | Structured Candidate JSON (URLs, Text, Contact) |
-| **JD Agent** | Role Relevance Alignment | Resume Text + Job Description | Score alignment, missing requirements, critical fits |
-| **GitHub Agent** | Open Source & Project Depth | GitHub URL / Resume Projects | Code complexity, architecture patterns, repo stats |
-| **LinkedIn Agent** | Career Stability & Longevity | LinkedIn URL / Career History | Work tenure, promotion frequency, career growth indicators |
-| **Tech Lead Agent** | Technical Competence | JD + GitHub + Resume outputs | System design rating, code depth, core technical score |
-| **HR Partner Agent** | Culture & Organizational Fit | LinkedIn + Resume outputs | Communication skills, teamwork potential, longevity rating |
-| **Decider Agent** | Final Panel Consensus | Tech Lead & HR Debate + Scores | Final decision (HIRE, WAITLIST, REJECT) & Executive Summary |
+- **Intake Agent:** Parses raw candidate resumes to extract contact information, structured text, and links to external portfolios (GitHub, LinkedIn).
+- **GitHub Agent:** Scans the candidate's GitHub footprint to inspect commit frequency, codebase complexity, project architectures, and coding consistency.
+- **LinkedIn Agent:** Examines career timeline stability. Checks work tenure longevity, patterns of switching between employers, internship completions, and general trajectory consistency.
+- **Resume Agent:** Reviews the candidate's self-claimed credentials and technical competencies (e.g. C++). Cross-verifies these claims with the GitHub Agent to confirm if the candidate has actual project repositories backing up their stated expertise.
+- **JD Agent:** Maps the parsed candidate profile directly against the target Job Description to identify matching competencies, missing requirements, and overall alignment.
+- **Tech Lead Agent:** Focuses strictly on technical execution. Evaluates the candidate's system design depth, technical architecture choices, and code quality.
+- **HR Partner Agent:** Evaluates culture fit, communication competence, team alignment, and professional durability.
+- **Decider Agent:** Reviews the final scores, aggregates weights, reads the transcript of the debate between the JD, Tech Lead, and HR agents, and renders a final verdict (HIRE, WAITLIST, or REJECT) with an executive summary.
 
 ---
 
