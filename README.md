@@ -1,63 +1,95 @@
 
 
   # HirePanel.ai
-  ### *The Autonomous AI Hiring Committee that Vets Candidates in <30 Seconds*
+  ### The Autonomous AI Hiring Committee that Vets Candidates in less than 30 seconds
 
 
-  **Manual recruiting is cooked.**  
-  *HirePanel.ai* is an elite, multi-agent AI panel that acts as a fully autonomous hiring committee. It reads resumes, extracts verifiable evidence, crawls GitHub and LinkedIn, debates alignment on technical and culture fits, and renders an executive verdict—all in under 30 seconds.
+  HirePanel.ai is a multi-agent screening system that automates the initial stages of technical recruiting. By parsing uploaded resumes, analyzing candidate codebases on GitHub, evaluating work history on LinkedIn, and running a structured debate between virtual Tech Lead and HR roles, HirePanel delivers a comprehensive candidate evaluation and consensus verdict in under 30 seconds.
 
-  ### [Watch the Live Video Demo on LinkedIn](https://www.linkedin.com/posts/mahesh-nandigam_ai-agenticai-techcommunity-ugcPost-7474855620551241728-O5H9/?utm_source=share&utm_medium=member_desktop&rcm=ACoAADW99hsBJVeFIsEk7TLOg9YovphT7Sd-cWg)
+  ### Links
+  - [Live Video Demo](https://www.linkedin.com/posts/mahesh-nandigam_ai-agenticai-techcommunity-ugcPost-7474855620551241728-O5H9/?utm_source=share&utm_medium=member_desktop&rcm=ACoAADW99hsBJVeFIsEk7TLOg9YovphT7Sd-cWg)
+  - [Live App Link](https://hirepanel-ai.vercel.app)
 </div>
 
 ---
 
-## Architecture & Agent Choreography
+## Architecture and Agent Choreography
 
-Unlike simple keyword scanners (ATS) that search for matching words, **HirePanel.ai** models a real-world recruiting panel. Multiple specialized AI agents analyze the candidate from distinct, often conflicting perspectives, engage in a debate, and vote on the final verdict.
+HirePanel.ai structures candidate screening as a pipeline of cooperative, specialized AI agents. This structure ensures that candidates are evaluated from multiple perspectives (such as technical depth and team alignment) before a final decision is reached.
 
 ```mermaid
-graph TD
-    %% Inputs
-    A[PDF Resume Upload] --> E[Intake Agent]
-    B[Job Description] --> E
-    
-    %% Intake Stage
-    E -->|Parses Candidate Profile| F[Intake Context]
-    
-    %% Parallel Assessment
-    F -->|Extracted GitHub URL / Text| G[GitHub Agent]
-    F -->|Extracted LinkedIn URL / Text| H[LinkedIn Agent]
-    F -->|Raw Profile & Projects| I[JD Agent]
-    F -->|Direct Resume Evidence| J[Resume Agent]
-    
-    %% Evaluation Outputs
-    G -->|Commit History & Code Insights| K[Tech Lead Agent]
-    J -->|Technical Depth & Skills| K
-    H -->|Career Progression & Longevity| L[HR Partner Agent]
-    I -->|Role Matching & Fit| L
-    
-    %% Debate & Consensus
-    K <-->|Evaluation Debate & Score Matrix| L
-    
-    %% Decider Stage
-    K -->|Technical Score & Case| M[Decider Agent]
-    L -->|Culture Fit Score & Case| M
-    
-    %% Final Outputs
-    M -->|Weighted Voting Consensus| N{Verdict: HIRE, WAITLIST, or REJECT}
+flowchart TD
+    %% Define styles for clean appearance
+    classDef input fill:#e1f5fe,stroke:#01579b,stroke-width:1px;
+    classDef agent fill:#f3e5f5,stroke:#4a148c,stroke-width:1px;
+    classDef process fill:#efebe9,stroke:#3e2723,stroke-width:1px;
+    classDef output fill:#e8f5e9,stroke:#1b5e20,stroke-width:1px;
+
+    subgraph Inputs [1. Inputs]
+        JD[Job Description]
+        PDF[PDF Resumes <br/> Supports bulk upload from 1 up to 10,000 files]
+    end
+    class Inputs,JD,PDF input;
+
+    subgraph IntakeStage [2. Intake and Parsing]
+        Intake[Intake Agent]
+        PDF --> Intake
+    end
+    class IntakeStage,Intake process;
+
+    subgraph RoutingStage [3. URL and Data Extraction]
+        Parsed[Parsed Candidate Profile]
+        Intake --> Parsed
+    end
+    class RoutingStage,Parsed process;
+
+    subgraph Extractors [4. Parallel Assessment]
+        GH_Agent[GitHub Agent]
+        LI_Agent[LinkedIn Agent]
+        JD_Agent[JD Agent]
+        Res_Agent[Resume Agent]
+        
+        Parsed -->|Extracts and routes GitHub URL| GH_Agent
+        Parsed -->|Extracts and routes LinkedIn URL| LI_Agent
+        Parsed -->|Routes resume text| JD_Agent
+        Parsed -->|Routes resume text| Res_Agent
+    end
+    class Extractors,GH_Agent,LI_Agent,JD_Agent,Res_Agent agent;
+
+    subgraph EvaluationPanel [5. Debate Committee]
+        TechLead[Tech Lead Agent<br/>Evaluates system design & code depth]
+        HR[HR Partner Agent<br/>Evaluates longevity & culture fit]
+        
+        GH_Agent --> TechLead
+        Res_Agent --> TechLead
+        LI_Agent --> HR
+        JD_Agent --> HR
+        
+        TechLead <-->|Consensus debate & score matrix| HR
+    end
+    class EvaluationPanel,TechLead,HR agent;
+
+    subgraph DecisionStage [6. Verdict Rendering]
+        Decider[Decider Agent]
+        Verdict[Final Verdict<br/>HIRE, WAITLIST, or REJECT]
+        
+        TechLead --> Decider
+        HR --> Decider
+        Decider --> Verdict
+    end
+    class DecisionStage,Decider,Verdict output;
 ```
 
 ---
 
 ## Key Features
 
-- **Blazing Fast (Groq Cloud):** Processes and evaluates candidate portfolios in parallel in under 30 seconds using Llama-3.3-70b on Groq.
-- **Resume-Driven Intelligence:** Zero generic templates. Every score, strength, and concern is directly cited with evidence found in the uploaded PDF.
-- **Dynamic Committee Debate:** The Tech Lead evaluates system design, code patterns, and technical depth. The HR Partner reviews job hopper indicators, career progression, and cultural suitability. They challenge each other dynamically.
-- **Enterprise API Reliability:** Features a built-in API Key Rotator (supports rotating up to 10 keys to bypass free-tier rate limits) and automatic Local Ollama Fallback (`gemma3:4b` or `llama3`) when cloud calls fail.
-- **Interactive Dashboard:** A beautiful Glassmorphism UI displaying real-time agent progression, score matrices, side-by-side agent debate logs, and leaderboards.
-- **One-Click CSV Export:** Export evaluation summaries, candidate metrics, and the Decider's verdict instantly.
+- **Fast Evaluations (Groq Cloud):** Processes candidate profiles concurrently using Llama-3.3-70b on Groq, completing evaluations in less than 30 seconds.
+- **Evidence-Based Reasoning:** Extracts candidate details directly from uploaded PDFs, ensuring all strengths and areas of concern are supported by direct citations.
+- **Dynamic Peer Review:** Employs a debate between Tech Lead and HR Partner personas to balance technical competence with long-term retention and team fit.
+- **Resilient API Layer:** Includes a Groq API Key Rotator supporting up to 10 keys to prevent rate limit blocks, alongside a local fallback to Ollama (running gemma3:4b or llama3) for offline stability.
+- **Real-Time Dashboards:** Features a dashboard tracking active agent status, detailed side-by-side agent debate logs, and candidate rankings.
+- **Data Export:** Supports exporting evaluation metrics, notes, and final decisions to CSV.
 
 ---
 
@@ -71,7 +103,7 @@ graph TD
 | **LinkedIn Agent** | Career Stability & Longevity | LinkedIn URL / Career History | Work tenure, promotion frequency, career growth indicators |
 | **Tech Lead Agent** | Technical Competence | JD + GitHub + Resume outputs | System design rating, code depth, core technical score |
 | **HR Partner Agent** | Culture & Organizational Fit | LinkedIn + Resume outputs | Communication skills, teamwork potential, longevity rating |
-| **Decider Agent** | Final Panel Consensus | Tech Lead & HR Debate + Scores | Final decision (`HIRE`, `WAITLIST`, `REJECT`) & Executive Summary |
+| **Decider Agent** | Final Panel Consensus | Tech Lead & HR Debate + Scores | Final decision (HIRE, WAITLIST, REJECT) & Executive Summary |
 
 ---
 
@@ -135,7 +167,7 @@ GROQ_API_KEY_1=gsk_your_second_key_here
 GROQ_API_KEY_2=gsk_your_third_key_here
 ```
 > [!NOTE]
-> Setting `DEMO_MODE=True` tells the system to bypass local Ollama setups and prioritize the Groq cloud endpoint for lightning-fast speeds.
+> Setting DEMO_MODE=True tells the system to bypass local Ollama setups and prioritize the Groq cloud endpoint for faster evaluation times.
 
 Start the backend server:
 ```bash
@@ -150,18 +182,18 @@ npm install
 npm run dev
 ```
 
-### 4. Run & Test the Application
-1. Open your browser to `http://localhost:5173`.
+### 4. Run and Test the Application
+1. Open your browser to http://localhost:5173.
 2. Input a Job Description (or use the preloaded template).
 3. Upload candidate resumes (PDF format).
-4. Click **Start Evaluation** and watch the AI hiring committee execute the interview assessment live!
+4. Click Start Evaluation and watch the AI hiring committee execute the interview assessment live!
 
 ---
 
 ## Reliability & Fail-safes
 If you run out of Groq API limits:
-1. The **GroqKeyRotator** immediately switches to the next available environment key.
-2. If all API keys run dry, or if you disable `DEMO_MODE` (`DEMO_MODE=False`), the backend falls back gracefully to a locally running Ollama instance (`gemma3:4b` or `llama3`) to ensure data evaluation never stops.
+1. The GroqKeyRotator immediately switches to the next available environment key.
+2. If all API keys run dry, or if you disable DEMO_MODE (DEMO_MODE=False), the backend falls back gracefully to a locally running Ollama instance (gemma3:4b or llama3) to ensure data evaluation never stops.
 
 ---
 
