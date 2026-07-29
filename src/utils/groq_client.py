@@ -162,8 +162,8 @@ class GroqKeyRotator:
             "Content-Type": "application/json"
         }
         
-        # Meta Llama Model on NVIDIA NIM
-        nvidia_model = "meta/llama-3.1-8b-instruct"
+        # We upgraded this from an 8b model to the state-of-the-art 70b reasoning model
+        nvidia_model = "meta/llama-3.3-70b-instruct"
         payload = {
             "model": nvidia_model,
             "messages": messages,
@@ -174,17 +174,35 @@ class GroqKeyRotator:
             payload["response_format"] = response_format
             
         print(f"[NVIDIA API] Sending request to {nvidia_model}...")
-        start_time = time.time()
-        response = requests.post(url, headers=headers, json=payload, timeout=30.0)
-        latency = time.time() - start_time
-        print(f"[NVIDIA API] Responded in {latency:.3f}s. Status: {response.status_code}")
         
-        if response.status_code == 200:
-            res_data = response.json()
-            content = res_data["choices"][0]["message"]["content"]
-            return MockChatCompletion(content)
-        else:
-            raise Exception(f"NVIDIA API Error {response.status_code}: {response.text}")
+        # Added retry logic for NVIDIA API to handle rate limits and transient errors
+        for attempt in range(3):
+            start_time = time.time()
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=30.0)
+                latency = time.time() - start_time
+                print(f"[NVIDIA API] Attempt {attempt+1}: Responded in {latency:.3f}s. Status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    content = res_data["choices"][0]["message"]["content"]
+                    return MockChatCompletion(content)
+                elif response.status_code == 429:
+                    print(f"[NVIDIA API] Rate limited. Retrying in 2 seconds...")
+                    time.sleep(2)
+                    continue
+                else:
+                    print(f"[NVIDIA API Error {response.status_code}] {response.text}")
+                    if response.status_code >= 500:
+                        time.sleep(2)
+                        continue
+                    else:
+                        raise Exception(f"NVIDIA API Error {response.status_code}: {response.text}")
+            except Exception as e:
+                print(f"[NVIDIA API Connection Error] {e}")
+                time.sleep(2)
+        
+        raise Exception(f"NVIDIA API failed after 3 attempts.")
 
     def execute_completion(self, messages, model="llama-3.3-70b-versatile", response_format=None, **kwargs):
         is_groq_disabled = os.environ.get("DISABLE_GROQ_FALLBACK", "").lower() == "true"

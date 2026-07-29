@@ -94,16 +94,18 @@ class LinkedInAgent:
                 f"Your chat_message MUST reference SPECIFIC job roles, companies, or tenure patterns from the resume. Never be generic."
             )
 
-        try:
-            chat_completion = groq_rotator.execute_completion(
-                messages=[
-                    {"role": "system", "content": "You are a JSON assistant. Output valid JSON."},
-                    {"role": "user", "content": prompt + "\nOutput JSON exactly matching this format:\n" + get_simple_schema(LinkedInContext)}
-                ],
-                model=self.model,
-                response_format={"type": "json_object"},
-            )
-            return json.loads(chat_completion.choices[0].message.content)
-        except Exception as e:
-            print(f"LinkedIn Agent Error: {e}")
-            return {"linkedin_score": 0.0, "chat_message": "Error evaluating LinkedIn profile."}
+        for attempt in range(3):
+            try:
+                chat_completion = groq_rotator.execute_completion(
+                    messages=[
+                        {"role": "system", "content": "You are a JSON assistant. Output valid JSON."},
+                        {"role": "user", "content": prompt + "\nOutput JSON exactly matching this format:\n" + get_simple_schema(LinkedInContext)}
+                    ],
+                    model=self.model,
+                    response_format={"type": "json_object"},
+                )
+                return json.loads(chat_completion.choices[0].message.content)
+            except Exception as e:
+                print(f"LinkedIn Agent Error on attempt {attempt+1}: {e}")
+                
+        return {"linkedin_score": 0.0, "chat_message": "Error evaluating LinkedIn profile after multiple attempts."}

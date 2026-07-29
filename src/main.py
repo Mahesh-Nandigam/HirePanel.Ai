@@ -20,8 +20,6 @@ from src.agents.github_agent import GitHubAgent
 from src.agents.linkedin_agent import LinkedInAgent
 from src.agents.resume_agent import ResumeAgent
 from src.agents.jd_agent import JDAgent
-from src.agents.debate_agents import TechLeadAgent, HRAgent
-from src.agents.decider_agent import DeciderAgent
 
 app = FastAPI()
 
@@ -91,7 +89,7 @@ async def evaluate_candidate(file: UploadFile = File(...), job_description: str 
                 parsed_jd = parsed_jd_cache[jd_key]
         jd_parsing_time = time.time() - start_jd_parsing
         
-        # 3. Run GitHub, LinkedIn, Resume, and JD agents in parallel
+        # 3. Run Assessors (GitHub, LinkedIn, JD) first, then Resume for cross-verification
         start_assessors = time.time()
 
         def run_github():
@@ -100,18 +98,21 @@ async def evaluate_candidate(file: UploadFile = File(...), job_description: str 
         def run_linkedin():
             return LinkedInAgent().evaluate_profile(text, name, linkedin_url)
 
-        def run_resume():
-            return ResumeAgent().evaluate_resume(text, name)
-
         def run_jd():
             return JDAgent().evaluate_alignment(text, parsed_jd)
 
-        github_result, linkedin_result, resume_result, jd_result = await asyncio.gather(
+        # Run external scraping and JD first
+        github_result, linkedin_result, jd_result = await asyncio.gather(
             asyncio.to_thread(run_github),
             asyncio.to_thread(run_linkedin),
-            asyncio.to_thread(run_resume),
             asyncio.to_thread(run_jd)
         )
+
+        def run_resume():
+            return ResumeAgent().evaluate_resume(text, name, github_data=github_result, linkedin_data=linkedin_result)
+
+        resume_result = await asyncio.to_thread(run_resume)
+        
         assessors_time = time.time() - start_assessors
 
         resume_score = safe_float(resume_result.get("resume_score", 0.0))
@@ -119,40 +120,23 @@ async def evaluate_candidate(file: UploadFile = File(...), job_description: str 
         linkedin_score = safe_float(linkedin_result.get("linkedin_score", 0.0))
         jd_score = safe_float(jd_result.get("jd_fit_score", 0.0))
 
-        # 4. Run Tech Lead and HR debate agents in a sequential debate loop
-        start_debate = time.time()
-        # Build richer resume context for debate agents (up to 1500 words)
-        resume_context = " ".join(text.split()[:1500])
-
-        # Step A: Get initial Technical evaluation from the Tech Lead
-        tl_initial = await asyncio.to_thread(
-            TechLeadAgent().evaluate, resume_score, github_score, jd_score, name, resume_context
-        )
-        tl_init_arg = tl_initial.get("argument", "No strong technical opinion.")
-        tl_init_stance = tl_initial.get("stance", "PASS")
-
-        # Step B: Pass Tech Lead's argument to the HR Partner for their counter-evaluation
-        hr_result = await asyncio.to_thread(
-            HRAgent().evaluate, linkedin_score, jd_score, name, resume_context, peer_argument=tl_init_arg, peer_stance=tl_init_stance
-        )
-        hr_arg = hr_result.get("argument", "No strong HR opinion.")
-        hr_stance = hr_result.get("stance", "PASS")
-
-        # Step C: Pass HR Partner's counter-argument back to the Tech Lead for a final response/rebuttal
-        tl_result = await asyncio.to_thread(
-            TechLeadAgent().evaluate, resume_score, github_score, jd_score, name, resume_context, peer_argument=hr_arg, peer_stance=hr_stance
-        )
-        tl_arg = tl_result.get("argument", "No strong technical opinion.")
-        debate_time = time.time() - start_debate
-
-        # 5. Decider Agent
+        # 4. Calculate Final Score deterministically
         start_decider = time.time()
-        decider = DeciderAgent()
-        final_verdict = decider.make_decision(github_score, linkedin_score, resume_score, jd_score, tl_arg, hr_arg)
         
-        final_score_100 = final_verdict.get("final_score", 0.0)
-        status = final_verdict.get("status", "REJECT")
-        decider_msg = final_verdict.get("chat_message", "No final verdict generated.")
+        # We assign weights to each score based on the new streamlined architecture
+        raw_final = (resume_score * 0.5) + (github_score * 0.2) + (linkedin_score * 0.15) + (jd_score * 0.15)
+        final_score_100 = round(raw_final * 10, 1)
+
+        if final_score_100 >= 70: 
+            status = "HIRE"
+        elif final_score_100 >= 50: 
+            status = "WAITLIST"
+        else: 
+            status = "REJECT"
+
+        decider_msg = f"Final Score: {final_score_100}/100. Based purely on deterministic weighting of Resume, GitHub, LinkedIn, and JD alignment. Decision: {status}."
+        
+        debate_time = 0.0
         decider_time = time.time() - start_decider
 
         total_time = time.time() - start_total
@@ -186,8 +170,6 @@ async def evaluate_candidate(file: UploadFile = File(...), job_description: str 
                 { "agent": "Resume", "text": resume_result.get("chat_message", "No analysis.") },
                 { "agent": "GitHub", "text": github_result.get("chat_message", "No analysis.") },
                 { "agent": "LinkedIn", "text": linkedin_result.get("chat_message", "No analysis.") },
-                { "agent": "Tech Lead", "text": tl_arg },
-                { "agent": "HR", "text": hr_arg },
                 { "agent": "Decider", "text": f"[Pipeline Time: {total_time:.2f}s] {decider_msg}" }
             ],
             "timings": {
