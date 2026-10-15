@@ -1,3 +1,11 @@
+# HirePanel.Ai
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Website-brightgreen?style=for-the-badge&logo=vercel)](https://hire-panel-ai.vercel.app)
+
+**🔗 Live URL:** [https://hire-panel-ai.vercel.app](https://hire-panel-ai.vercel.app)
+
+---
+
 <div align="center">
   <h1>HirePanel.ai</h1>
   <h3>The Industry-Grade AI Hiring Committee</h3>
